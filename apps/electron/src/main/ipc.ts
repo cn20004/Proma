@@ -222,6 +222,7 @@ import {
 import { extractTextFromAttachment } from './lib/document-parser'
 import { getUserProfile, updateUserProfile } from './lib/user-profile-service'
 import { getSettings, updateSettings } from './lib/settings-service'
+import { createDataSafetyBackup, getDataSafetyStatus } from './lib/20004-data-safety'
 import { refreshAgentIslandConfiguration, markAgentIslandSessionViewed } from './lib/agent-island-service'
 import { getAgentStatusHoverWindow } from './agent-status-hover-window'
 import { setDockBadgeCount } from './lib/dock-badge-service'
@@ -2234,6 +2235,27 @@ export function registerIpcHandlers(): void {
 
       return result
     }
+  )
+
+  ipcMain.handle(
+    SETTINGS_IPC_CHANNELS.DATA_SAFETY_STATUS,
+    async () => getDataSafetyStatus(),
+  )
+  ipcMain.handle(
+    SETTINGS_IPC_CHANNELS.DATA_SAFETY_BACKUP_NOW,
+    async () => createDataSafetyBackup('manual'),
+  )
+  ipcMain.handle(
+    SETTINGS_IPC_CHANNELS.DATA_SAFETY_OPEN_CONFIG_DIR,
+    async () => {
+      await shell.openPath(getDataSafetyStatus().configDir)
+    },
+  )
+  ipcMain.handle(
+    SETTINGS_IPC_CHANNELS.DATA_SAFETY_OPEN_BACKUP_DIR,
+    async () => {
+      await shell.openPath(getDataSafetyStatus().backupRoot)
+    },
   )
 
   // 同步更新应用设置（用于 beforeunload 场景）
