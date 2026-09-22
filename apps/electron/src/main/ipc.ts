@@ -155,7 +155,7 @@ import type {
   BrowserTabInput,
   BrowserCreateTabInput,
 } from '@proma/shared'
-import type { UserProfile, AppSettings, HangzhouStudentInput } from '../types'
+import type { UserProfile, AppSettings, HangzhouStudentInput, HangzhouChannelInput, HangzhouContentInput, HangzhouIntelligenceInput } from '../types'
 import { getRuntimeStatus, getGitRepoStatus, reinitializeRuntime } from './lib/runtime-init'
 import { browserController } from './lib/browser-controller'
 import { acknowledgeTerminalOutput, closeTerminalsForSession, createTerminal, getTerminalSnapshot, killTerminal, resizeTerminal, writeTerminal } from './lib/terminal-service'
@@ -223,7 +223,7 @@ import { extractTextFromAttachment } from './lib/document-parser'
 import { getUserProfile, updateUserProfile } from './lib/user-profile-service'
 import { getSettings, updateSettings } from './lib/settings-service'
 import { createDataSafetyBackup, getDataSafetyStatus } from './lib/20004-data-safety'
-import { getHangzhouProjectDashboard, listHangzhouStudents, createHangzhouStudent, updateHangzhouStudent, deleteHangzhouStudent } from './lib/20004-hangzhou-project'
+import { getHangzhouProjectDashboard, listHangzhouStudents, createHangzhouStudent, updateHangzhouStudent, deleteHangzhouStudent, listHangzhouChannels, createHangzhouChannel, updateHangzhouChannel, deleteHangzhouChannel, listHangzhouContent, createHangzhouContent, updateHangzhouContent, deleteHangzhouContent, listHangzhouIntelligence, createHangzhouIntelligence, updateHangzhouIntelligence, deleteHangzhouIntelligence } from './lib/20004-hangzhou-project'
 import { refreshAgentIslandConfiguration, markAgentIslandSessionViewed } from './lib/agent-island-service'
 import { getAgentStatusHoverWindow } from './agent-status-hover-window'
 import { setDockBadgeCount } from './lib/dock-badge-service'
@@ -2219,6 +2219,19 @@ export function registerIpcHandlers(): void {
     HANGZHOU_IPC_CHANNELS.DELETE_STUDENT,
     async (_, id: string) => deleteHangzhouStudent(id),
   )
+
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.LIST_CHANNELS, async () => listHangzhouChannels())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.CREATE_CHANNEL, async (_, input: HangzhouChannelInput) => createHangzhouChannel(input))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.UPDATE_CHANNEL, async (_, id: string, updates: Partial<HangzhouChannelInput>) => updateHangzhouChannel(id, updates))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.DELETE_CHANNEL, async (_, id: string) => deleteHangzhouChannel(id))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.LIST_CONTENT, async () => listHangzhouContent())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.CREATE_CONTENT, async (_, input: HangzhouContentInput) => createHangzhouContent(input))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.UPDATE_CONTENT, async (_, id: string, updates: Partial<HangzhouContentInput>) => updateHangzhouContent(id, updates))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.DELETE_CONTENT, async (_, id: string) => deleteHangzhouContent(id))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.LIST_INTELLIGENCE, async () => listHangzhouIntelligence())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.CREATE_INTELLIGENCE, async (_, input: HangzhouIntelligenceInput) => createHangzhouIntelligence(input))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.UPDATE_INTELLIGENCE, async (_, id: string, updates: Partial<HangzhouIntelligenceInput>) => updateHangzhouIntelligence(id, updates))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.DELETE_INTELLIGENCE, async (_, id: string) => deleteHangzhouIntelligence(id))
 
   // ===== 应用设置相关 =====
 
