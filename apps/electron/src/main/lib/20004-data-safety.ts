@@ -31,6 +31,7 @@ const CRITICAL_ENTRIES = [
   'vault.json',
   'planning.json',
   'automations.json',
+  '20004-hangzhou.json',
 ] as const
 
 function getBackupRoot(): string {
