@@ -430,6 +430,27 @@ export interface DataSafetyStatus {
   backupCount: number
 }
 
+export type HangzhouStudentStage = 'lead' | 'appointment' | 'arrived' | 'trial' | 'signed'
+export type HangzhouStudentIntent = 'low' | 'medium' | 'high'
+
+export interface HangzhouStudentRecord {
+  id: string
+  name: string
+  education?: string
+  graduation?: string
+  source?: string
+  direction?: string
+  stage: HangzhouStudentStage
+  intent: HangzhouStudentIntent
+  concern?: string
+  nextFollowUpAt?: number
+  notes?: string
+  createdAt: number
+  updatedAt: number
+}
+
+export type HangzhouStudentInput = Omit<HangzhouStudentRecord, 'id' | 'createdAt' | 'updatedAt'>
+
 export interface HangzhouProjectDashboard {
   dataPath: string
   students: number
@@ -443,6 +464,10 @@ export interface HangzhouProjectDashboard {
 
 export const HANGZHOU_IPC_CHANNELS = {
   GET_DASHBOARD: '20004:hangzhou:get-dashboard',
+  LIST_STUDENTS: '20004:hangzhou:list-students',
+  CREATE_STUDENT: '20004:hangzhou:create-student',
+  UPDATE_STUDENT: '20004:hangzhou:update-student',
+  DELETE_STUDENT: '20004:hangzhou:delete-student',
 } as const
 
 export const SETTINGS_IPC_CHANNELS = {
