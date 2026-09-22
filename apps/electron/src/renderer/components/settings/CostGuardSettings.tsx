@@ -1,6 +1,7 @@
 import * as React from 'react'
-import { ShieldCheck, Coins, Gauge, Wrench, Repeat2, BrainCircuit, Database, Route } from 'lucide-react'
+import { ShieldCheck, Coins, Gauge, Wrench, Repeat2, BrainCircuit, Database, Route, FolderOpen, Save, HardDrive } from 'lucide-react'
 import type { Channel } from '@proma/shared'
+import type { DataSafetyStatus } from '../../../types/settings'
 import { Button } from '@/components/ui/button'
 import { SettingsCard, SettingsSection } from './primitives'
 
@@ -96,9 +97,12 @@ export function CostGuardSettings(): React.ReactElement {
   const [form, setForm] = React.useState<CostGuardForm>(DEFAULT_FORM)
   const [saved, setSaved] = React.useState(false)
   const [channels, setChannels] = React.useState<Channel[]>([])
+  const [dataSafety, setDataSafety] = React.useState<DataSafetyStatus | null>(null)
+  const [backupBusy, setBackupBusy] = React.useState(false)
 
   React.useEffect(() => {
     void window.electronAPI.listChannels().then(setChannels).catch(console.error)
+    void window.electronAPI.getDataSafetyStatus().then(setDataSafety).catch(console.error)
     window.electronAPI.getSettings().then((settings) => {
       setForm({
         enabled: settings.costGuardEnabled ?? true,
@@ -246,6 +250,55 @@ export function CostGuardSettings(): React.ReactElement {
         </SettingsCard>
       </SettingsSection>
 
+
+
+      <SettingsSection
+        title="20004 数据安全"
+        description="20004 Edition 与官方 Proma 共用 ~/.proma 项目数据。每天首次启动自动备份关键数据，最多保留 10 份。"
+      >
+        <SettingsCard>
+          <div className="grid gap-4 p-4 md:grid-cols-2">
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <HardDrive size={16} /> 当前数据目录
+              </div>
+              <div className="break-all text-xs text-muted-foreground">{dataSafety?.configDir ?? '正在读取…'}</div>
+            </div>
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+              <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+                <Save size={16} /> 最近备份
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {dataSafety?.latestBackupAt
+                  ? new Date(dataSafety.latestBackupAt).toLocaleString()
+                  : '尚无备份'}
+                {dataSafety ? ` · 共 ${dataSafety.backupCount} 份` : ''}
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 border-t border-border/60 px-4 py-4">
+            <Button
+              variant="outline"
+              disabled={backupBusy}
+              onClick={() => {
+                setBackupBusy(true)
+                void window.electronAPI.createDataSafetyBackup()
+                  .then(setDataSafety)
+                  .finally(() => setBackupBusy(false))
+              }}
+            >
+              <Save size={15} className="mr-2" />
+              {backupBusy ? '正在备份…' : '立即备份'}
+            </Button>
+            <Button variant="outline" onClick={() => void window.electronAPI.openPromaDataDir()}>
+              <FolderOpen size={15} className="mr-2" />打开数据目录
+            </Button>
+            <Button variant="outline" onClick={() => void window.electronAPI.openPromaBackupDir()}>
+              <FolderOpen size={15} className="mr-2" />打开备份目录
+            </Button>
+          </div>
+        </SettingsCard>
+      </SettingsSection>
 
       <SettingsSection
         title="20004 Model Router"
