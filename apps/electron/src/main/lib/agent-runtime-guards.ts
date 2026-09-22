@@ -71,9 +71,11 @@ export function createAgentRuntimeGuard(options: AgentRuntimeGuardOptions): Agen
   }
   const maxTurns = normalizePositiveNumber(options.maxTurns)
   const maxBudgetUsd = normalizePositiveNumber(options.maxBudgetUsd)
+  const maxToolCalls = normalizePositiveNumber(options.maxToolCalls)
+  const repeatToolCallLimit = normalizePositiveNumber(options.repeatToolCallLimit)
   const getLimitResultOverride = (): RuntimeGuardResultOverride | undefined => {
-    const reason = markLimitStopReason(state, maxTurns, maxBudgetUsd)
-    return reason ? createLimitResultOverride(reason, maxTurns, maxBudgetUsd) : undefined
+    const reason = markLimitStopReason(state, maxTurns, maxBudgetUsd, maxToolCalls, repeatToolCallLimit)
+    return reason ? createLimitResultOverride(reason, maxTurns, maxBudgetUsd, maxToolCalls, repeatToolCallLimit) : undefined
   }
 
   return {
@@ -93,12 +95,24 @@ export function createAgentRuntimeGuard(options: AgentRuntimeGuardOptions): Agen
       }
     },
 
+    recordToolCall(name, args) {
+      state.toolCalls += 1
+      if (maxToolCalls != null && state.toolCalls >= maxToolCalls) state.maxToolCallsReached = true
+      const signature = `${name}:${stableStringify(args)}`
+      if (signature === state.lastToolSignature) state.repeatToolCalls += 1
+      else {
+        state.lastToolSignature = signature
+        state.repeatToolCalls = 1
+      }
+      if (repeatToolCallLimit != null && state.repeatToolCalls >= repeatToolCallLimit) state.repeatToolCallReached = true
+    },
+
     shouldStopBeforeNextTurn() {
-      return markLimitStopReason(state, maxTurns, maxBudgetUsd) != null
+      return markLimitStopReason(state, maxTurns, maxBudgetUsd, maxToolCalls, repeatToolCallLimit) != null
     },
 
     applyToolResult(result) {
-      if (markLimitStopReason(state, maxTurns, maxBudgetUsd)) {
+      if (markLimitStopReason(state, maxTurns, maxBudgetUsd, maxToolCalls, repeatToolCallLimit)) {
         return { ...result, terminate: true }
       }
       return result
