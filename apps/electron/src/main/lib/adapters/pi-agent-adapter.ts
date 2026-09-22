@@ -116,6 +116,7 @@ export interface PiAgentQueryOptions extends AgentQueryInput {
   maxToolCalls?: number
   repeatToolCallLimit?: number
   compactionThresholdRatio?: number
+  maxToolResultChars?: number
   permissionMode: PromaPermissionMode
   canUseTool?: (
     toolName: string,
@@ -1275,7 +1276,37 @@ function wrapCustomToolDefinitions(
     wrapToolWithPermission(tool as unknown as ToolDefinition<TSchema, unknown, unknown>, { canUseTool }) as ToolDefinition)
 }
 
-export function installRuntimeGuardHooks(session: AgentSession, guard: AgentRuntimeGuard): void {
+function truncateToolResultContent<T>(content: T, maxChars: number | undefined): T {
+  if (!maxChars || maxChars <= 0) return content
+  const keep = (text: string): string => {
+    if (text.length <= maxChars) return text
+    const head = Math.max(1, Math.floor(maxChars * 0.7))
+    const tail = Math.max(1, maxChars - head)
+    return `${text.slice(0, head)}\n\n[20004 Context Guard: 中间过长内容已裁剪 ${text.length - maxChars} 字符]\n\n${text.slice(-tail)}`
+  }
+
+  if (typeof content === 'string') return keep(content) as T
+  if (!Array.isArray(content)) return content
+
+  let remaining = maxChars
+  const next = content.map((block) => {
+    if (!block || typeof block !== 'object') return block
+    const record = block as Record<string, unknown>
+    if (record.type !== 'text' || typeof record.text !== 'string') return block
+    if (remaining <= 0) return { ...record, text: '[20004 Context Guard: 后续文本工具输出已省略]' }
+    const text = record.text
+    const allowed = Math.min(remaining, text.length)
+    remaining -= allowed
+    return { ...record, text: keep(text.slice(0, allowed)) }
+  })
+  return next as T
+}
+
+export function installRuntimeGuardHooks(
+  session: AgentSession,
+  guard: AgentRuntimeGuard,
+  inputMaxToolResultChars?: number,
+): void {
   const previousAfterToolCall = session.agent.afterToolCall
   session.agent.afterToolCall = async (context, signal) => {
     guard.recordToolCall(context.toolCall.name, context.toolCall.arguments)
@@ -1286,9 +1317,10 @@ export function installRuntimeGuardHooks(session: AgentSession, guard: AgentRunt
       terminate: previousResult?.terminate ?? context.result.terminate,
     }
     const sanitizedContent = sanitizeToolResultImageContent(resultAfterPreviousHooks.content)
+    const contextGuardedContent = truncateToolResultContent(sanitizedContent, inputMaxToolResultChars)
     const guardedResult = guard.applyToolResult({
       ...resultAfterPreviousHooks,
-      content: sanitizedContent,
+      content: contextGuardedContent,
     })
 
     if (
@@ -1538,7 +1570,7 @@ export class PiAgentAdapter implements AgentProviderAdapter {
         requestProxyDispatcher,
         () => providerStreamFn(requestModel, context, options),
       )
-      installRuntimeGuardHooks(session, runtimeGuard)
+      installRuntimeGuardHooks(session, runtimeGuard, input.maxToolResultChars)
       installCurrentSessionCompactionHooks(session)
       active.session = session
       resolveActiveReady(active, session)
