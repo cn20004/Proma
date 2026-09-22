@@ -36,6 +36,7 @@ export {
 } from './gemini-model-capabilities'
 export {
   PI_AUTO_COMPACTION_THRESHOLD_RATIO,
+  normalizePiAutoCompactionThresholdRatio,
   calculatePiAutoCompactionReserveTokens,
   calculatePiAutoCompactionThresholdTokens,
 } from './pi-compaction'
