@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ShieldCheck, Coins, Gauge, Wrench, Repeat2, BrainCircuit } from 'lucide-react'
+import { ShieldCheck, Coins, Gauge, Wrench, Repeat2, BrainCircuit, Database } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SettingsCard, SettingsSection } from './primitives'
 
@@ -10,6 +10,7 @@ interface CostGuardForm {
   maxToolCalls: number
   repeatToolCallLimit: number
   compactionPercent: number
+  maxToolResultChars: number
 }
 
 const DEFAULT_FORM: CostGuardForm = {
@@ -19,6 +20,7 @@ const DEFAULT_FORM: CostGuardForm = {
   maxToolCalls: 100,
   repeatToolCallLimit: 5,
   compactionPercent: 25,
+  maxToolResultChars: 60000,
 }
 
 const PRESETS: Record<string, CostGuardForm> = {
@@ -29,6 +31,7 @@ const PRESETS: Record<string, CostGuardForm> = {
     maxToolCalls: 50,
     repeatToolCallLimit: 4,
     compactionPercent: 18,
+    maxToolResultChars: 40000,
   },
   '均衡模式': DEFAULT_FORM,
   '深度研究': {
@@ -38,6 +41,7 @@ const PRESETS: Record<string, CostGuardForm> = {
     maxToolCalls: 250,
     repeatToolCallLimit: 8,
     compactionPercent: 35,
+    maxToolResultChars: 100000,
   },
 }
 
@@ -88,6 +92,7 @@ export function CostGuardSettings(): React.ReactElement {
         maxToolCalls: settings.agentMaxToolCalls ?? DEFAULT_FORM.maxToolCalls,
         repeatToolCallLimit: settings.agentRepeatToolCallLimit ?? DEFAULT_FORM.repeatToolCallLimit,
         compactionPercent: Math.round((settings.agentCompactionThresholdRatio ?? 0.25) * 100),
+        maxToolResultChars: settings.agentMaxToolResultChars ?? DEFAULT_FORM.maxToolResultChars,
       })
     }).catch(console.error)
   }, [])
@@ -100,6 +105,7 @@ export function CostGuardSettings(): React.ReactElement {
       maxToolCalls: Math.max(1, Math.round(next.maxToolCalls)),
       repeatToolCallLimit: Math.max(2, Math.round(next.repeatToolCallLimit)),
       compactionPercent: Math.min(90, Math.max(10, Math.round(next.compactionPercent))),
+      maxToolResultChars: Math.max(5000, Math.round(next.maxToolResultChars)),
     }
     setForm(normalized)
     await window.electronAPI.updateSettings({
@@ -109,6 +115,7 @@ export function CostGuardSettings(): React.ReactElement {
       agentMaxToolCalls: normalized.maxToolCalls,
       agentRepeatToolCallLimit: normalized.repeatToolCallLimit,
       agentCompactionThresholdRatio: normalized.compactionPercent / 100,
+      agentMaxToolResultChars: normalized.maxToolResultChars,
     })
     setSaved(true)
     window.setTimeout(() => setSaved(false), 1600)
@@ -193,6 +200,17 @@ export function CostGuardSettings(): React.ReactElement {
             min={2}
             max={100}
             onChange={(value) => setForm((prev) => ({ ...prev, repeatToolCallLimit: value }))}
+          />
+          <NumberField
+            label="工具结果最大回填"
+            description="网页、Shell、搜索结果或文件读取过长时，保留前后关键信息并裁剪中间内容，避免一次工具输出撑爆上下文。"
+            icon={<Database size={18} />}
+            value={form.maxToolResultChars}
+            min={5000}
+            max={500000}
+            step={5000}
+            suffix="字符"
+            onChange={(value) => setForm((prev) => ({ ...prev, maxToolResultChars: value }))}
           />
           <NumberField
             label="上下文自动压缩阈值"
