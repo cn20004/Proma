@@ -22,6 +22,7 @@ import { AgentMessages, type AgentHistoryQuoteNavigationRequest } from './AgentM
 import { AgentHeader } from './AgentHeader'
 import { AgentMessageQueue } from './AgentMessageQueue'
 import { ContextUsageBadge } from './ContextUsageBadge'
+import { CostDashboard } from './CostDashboard'
 import { PermissionBanner } from './PermissionBanner'
 import { PermissionModeSelector } from './PermissionModeSelector'
 import { AskUserBanner } from './AskUserBanner'
@@ -3013,6 +3014,7 @@ export function AgentView({ sessionId }: { sessionId: string }): React.ReactElem
       <div className="flex h-full min-h-0 flex-1 min-w-0 max-w-[min(72rem,100%)] flex-col overflow-hidden mx-auto">
         {/* Agent Header */}
         <AgentHeader sessionId={sessionId} />
+        <CostDashboard sessionId={sessionId} />
 
         {/* 消息区域 */}
         <AgentMessages
