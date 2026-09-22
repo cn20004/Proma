@@ -22,6 +22,7 @@ import { AutomationFormView } from '@/components/automation/AutomationFormView'
 import { PlanningView } from '@/components/planning/PlanningView'
 import { AgentSkillsView } from '@/components/agent-skills/AgentSkillsView'
 import { VaultView } from '@/components/vault/VaultView'
+import { HangzhouProjectDashboard } from '@/components/20004/HangzhouProjectDashboard'
 import { automationFormAtom } from '@/atoms/automation-atoms'
 import { activeViewAtom } from '@/atoms/active-view'
 import { registerShortcut } from '@/lib/shortcut-registry'
@@ -156,6 +157,8 @@ export function MainArea(): React.ReactElement {
             <AgentSkillsView />
           ) : activeView === 'vault' ? (
             <VaultView />
+          ) : activeView === 'hangzhou' ? (
+            <HangzhouProjectDashboard />
           ) : (
             <>
               {showCenterTabBar && <TabBar />}
