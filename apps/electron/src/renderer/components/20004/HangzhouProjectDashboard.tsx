@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { Users, Network, Clapperboard, Search, Flame, Clock3, Database } from 'lucide-react'
 import type { HangzhouProjectDashboard as DashboardData } from '../../types/settings'
+import { HangzhouStudentCRM } from './HangzhouStudentCRM'
 
 function StatCard(props: { title: string; value: number; icon: React.ReactNode; hint: string }): React.ReactElement {
   return (
@@ -18,9 +19,13 @@ function StatCard(props: { title: string; value: number; icon: React.ReactNode; 
 export function HangzhouProjectDashboard(): React.ReactElement {
   const [data, setData] = React.useState<DashboardData | null>(null)
 
-  React.useEffect(() => {
+  const refresh = React.useCallback(() => {
     void window.electronAPI.getHangzhouProjectDashboard().then(setData).catch(console.error)
   }, [])
+
+  React.useEffect(() => {
+    refresh()
+  }, [refresh])
 
   return (
     <div className="h-full overflow-y-auto bg-content-area">
@@ -67,6 +72,8 @@ export function HangzhouProjectDashboard(): React.ReactElement {
             </div>
           </div>
         </div>
+
+        <HangzhouStudentCRM onChanged={refresh} />
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           {[
