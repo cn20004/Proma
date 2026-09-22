@@ -52,6 +52,7 @@ function registerProtocolsAndHandlers(): void {
 
 
 import { getSettings, updateSettings } from './lib/settings-service'
+import { createAutomaticDataSafetyBackup } from './lib/20004-data-safety'
 import { handlePromaFileRequest } from './lib/local-file-protocol'
 
 // 处理 EPIPE 错误：当 stdout/stderr 管道被关闭时（如 electronmon 重启），忽略写入错误
@@ -719,6 +720,9 @@ app.whenReady().then(bootstrap).catch(handleBootstrapFailure)
 async function bootstrap(): Promise<void> {
   // 初始化 Proma 版本号（供 User-Agent 等全局标识使用）
   setPromaVersion(app.getVersion())
+
+  // 20004 Edition：正式启动前对 ~/.proma 关键业务数据做每日一次快照。
+  safeRun('20004-data-safety-backup', createAutomaticDataSafetyBackup)
 
   // 先显示不依赖 Renderer 的静态启动页；运行时检测耗时不会再变成用户可见的空白。
   createStartupSplashWindow()
