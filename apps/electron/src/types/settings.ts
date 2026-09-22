@@ -333,10 +333,26 @@ export interface AppSettings {
   agentEffort?: AgentEffort
   /** OpenAI 新会话默认思考深度 */
   defaultOpenAIThinkingLevel?: AgentThinkingLevel
+  /** 20004 CostGuard 是否启用；undefined 按启用处理。 */
+  costGuardEnabled?: boolean
   /** Agent 最大预算（美元/次） */
   agentMaxBudgetUsd?: number
   /** Agent 最大轮次（0 或 undefined = SDK 默认） */
   agentMaxTurns?: number
+  /** 20004 CostGuard：单次任务最大工具调用次数。 */
+  agentMaxToolCalls?: number
+  /** 20004 CostGuard：相同工具与相同参数连续调用熔断阈值。 */
+  agentRepeatToolCallLimit?: number
+  /** 20004 CostGuard：自动上下文压缩阈值比例，例如 0.25 = 25%。 */
+  agentCompactionThresholdRatio?: number
+  /** 20004 Context Guard：单个工具结果允许回填给模型的最大文本字符数。 */
+  agentMaxToolResultChars?: number
+  /** 20004 Model Router：启用同渠道自动模型分流。 */
+  agentModelRouterEnabled?: boolean
+  /** 20004 Model Router：简单任务优先模型 ID。 */
+  agentCheapModelId?: string
+  /** 20004 Model Router：复杂任务优先模型 ID。 */
+  agentStrongModelId?: string
   /** 自动归档天数（0 = 禁用，默认 7） */
   archiveAfterDays?: number
   /** 发送消息快捷键模式：true = Cmd/Ctrl+Enter 发送，false(默认) = Enter 发送 */
