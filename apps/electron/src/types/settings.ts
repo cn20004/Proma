@@ -495,6 +495,89 @@ export interface HangzhouIntelligenceRecord {
 }
 export type HangzhouIntelligenceInput = Omit<HangzhouIntelligenceRecord, 'id' | 'createdAt' | 'updatedAt'>
 
+export interface HangzhouStudentPriority {
+  studentId: string
+  score: number
+  level: 'urgent' | 'high' | 'normal' | 'low'
+  reasons: string[]
+  nextAction: string
+}
+
+export interface HangzhouSchoolRecord {
+  id: string
+  name: string
+  province?: string
+  city?: string
+  department?: string
+  contactName?: string
+  contactRole?: string
+  phone?: string
+  wechat?: string
+  status: 'uncontacted' | 'contacted' | 'interested' | 'activity' | 'cooperating'
+  notes?: string
+  createdAt: number
+  updatedAt: number
+}
+export type HangzhouSchoolInput = Omit<HangzhouSchoolRecord, 'id' | 'createdAt' | 'updatedAt'>
+
+export interface HangzhouCallReviewRecord {
+  id: string
+  title: string
+  studentId?: string
+  transcript?: string
+  summary?: string
+  objections?: string[]
+  strengths?: string[]
+  misses?: string[]
+  nextAction?: string
+  createdAt: number
+  updatedAt: number
+}
+export type HangzhouCallReviewInput = Omit<HangzhouCallReviewRecord, 'id' | 'createdAt' | 'updatedAt'>
+
+export interface HangzhouContractCheckRecord {
+  id: string
+  title: string
+  sourceName?: string
+  sourceVersion?: string
+  sourceUpdatedAt?: number
+  claims: string[]
+  matchedClaims: string[]
+  warningClaims: string[]
+  notes?: string
+  createdAt: number
+  updatedAt: number
+}
+export type HangzhouContractCheckInput = Omit<HangzhouContractCheckRecord, 'id' | 'createdAt' | 'updatedAt'>
+
+export interface HangzhouCompetitorRecord {
+  id: string
+  name: string
+  platform?: string
+  account?: string
+  company?: string
+  lastObservedAt?: number
+  lastTopic?: string
+  lastMetric?: number
+  notes?: string
+  createdAt: number
+  updatedAt: number
+}
+export type HangzhouCompetitorInput = Omit<HangzhouCompetitorRecord, 'id' | 'createdAt' | 'updatedAt'>
+
+export interface HangzhouDailyBrief {
+  generatedAt: number
+  urgentStudents: HangzhouStudentPriority[]
+  overdueFollowUps: number
+  highIntentStudents: number
+  channelsNeedingAttention: number
+  unpublishedContent: number
+  intelligenceToVerify: number
+  schoolsInProgress: number
+  competitorsTracked: number
+  summary: string[]
+}
+
 export interface HangzhouProjectDashboard {
   dataPath: string
   students: number
@@ -524,6 +607,20 @@ export const HANGZHOU_IPC_CHANNELS = {
   CREATE_INTELLIGENCE: '20004:hangzhou:create-intelligence',
   UPDATE_INTELLIGENCE: '20004:hangzhou:update-intelligence',
   DELETE_INTELLIGENCE: '20004:hangzhou:delete-intelligence',
+  GET_STUDENT_PRIORITIES: '20004:hangzhou:get-student-priorities',
+  GET_DAILY_BRIEF: '20004:hangzhou:get-daily-brief',
+  LIST_SCHOOLS: '20004:hangzhou:list-schools',
+  CREATE_SCHOOL: '20004:hangzhou:create-school',
+  DELETE_SCHOOL: '20004:hangzhou:delete-school',
+  LIST_CALL_REVIEWS: '20004:hangzhou:list-call-reviews',
+  CREATE_CALL_REVIEW: '20004:hangzhou:create-call-review',
+  DELETE_CALL_REVIEW: '20004:hangzhou:delete-call-review',
+  LIST_CONTRACT_CHECKS: '20004:hangzhou:list-contract-checks',
+  CREATE_CONTRACT_CHECK: '20004:hangzhou:create-contract-check',
+  DELETE_CONTRACT_CHECK: '20004:hangzhou:delete-contract-check',
+  LIST_COMPETITORS: '20004:hangzhou:list-competitors',
+  CREATE_COMPETITOR: '20004:hangzhou:create-competitor',
+  DELETE_COMPETITOR: '20004:hangzhou:delete-competitor',
 } as const
 
 export const SETTINGS_IPC_CHANNELS = {
