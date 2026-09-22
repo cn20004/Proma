@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { AlertTriangle, BrainCircuit, Clock3, School, Search, Users } from 'lucide-react'
+import { toast } from 'sonner'
 import type { HangzhouDailyBrief, HangzhouStudentPriority, HangzhouStudentRecord } from '../../../types/settings'
 
 const LEVEL_LABEL: Record<HangzhouStudentPriority['level'], string> = { urgent: '紧急', high: '高', normal: '正常', low: '低' }
@@ -8,6 +9,7 @@ export function HangzhouAiManager(): React.ReactElement {
   const [brief, setBrief] = React.useState<HangzhouDailyBrief | null>(null)
   const [priorities, setPriorities] = React.useState<HangzhouStudentPriority[]>([])
   const [students, setStudents] = React.useState<HangzhouStudentRecord[]>([])
+  const lastReminderCountRef = React.useRef<number>(0)
 
   const refresh = React.useCallback(async () => {
     const [nextBrief, nextPriorities, nextStudents] = await Promise.all([
@@ -18,6 +20,10 @@ export function HangzhouAiManager(): React.ReactElement {
     setBrief(nextBrief)
     setPriorities(nextPriorities)
     setStudents(nextStudents)
+    if (nextBrief.overdueFollowUps > 0 && nextBrief.overdueFollowUps !== lastReminderCountRef.current) {
+      toast.warning(`杭州项目：有 ${nextBrief.overdueFollowUps} 个学生已到或超过跟进时间`)
+    }
+    lastReminderCountRef.current = nextBrief.overdueFollowUps
   }, [])
 
   React.useEffect(() => {
