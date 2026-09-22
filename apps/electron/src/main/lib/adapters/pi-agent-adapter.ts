@@ -93,7 +93,7 @@ type SkillLoadResult = ReturnType<ResourceLoader['getSkills']>
 
 const PI_NATIVE_MAX_RETRIES = 8
 const PI_NATIVE_RETRY_BASE_DELAY_MS = 1_000
-const MAX_AUTOMATIC_COMPACTION_CONTINUATIONS = 20
+const MAX_AUTOMATIC_COMPACTION_CONTINUATIONS = 5
 
 export function shouldMarkCompactionAfterCompletedTurn(
   terminalResult: SDKMessage | undefined,
