@@ -1367,6 +1367,11 @@ export class AgentOrchestrator {
             ? appSettings.agentCompactionThresholdRatio
             : 0.25)
         : undefined
+      const maxToolResultChars = costGuardEnabled
+        ? (appSettings.agentMaxToolResultChars && appSettings.agentMaxToolResultChars > 0
+            ? appSettings.agentMaxToolResultChars
+            : 60_000)
+        : undefined
       const piReasoningCapability = await resolvePiReasoningCapability(channel.provider, selectedModelId)
       const piThinkingLevel = resolvePiThinkingLevel(appSettings, sessionMeta, channel.provider, selectedModelId, piReasoningCapability)
       const projectInstructions = workspaceSlug
@@ -1544,6 +1549,7 @@ export class AgentOrchestrator {
         ...(maxToolCalls != null && { maxToolCalls }),
         ...(repeatToolCallLimit != null && { repeatToolCallLimit }),
         ...(compactionThresholdRatio != null && { compactionThresholdRatio }),
+        ...(maxToolResultChars != null && { maxToolResultChars }),
         ...(piCustomTools.length > 0 && { customTools: piCustomTools as PiAgentQueryOptions['customTools'] }),
         onSessionId: handleSessionId,
         onPiEntryBindings: (bindings) => {
