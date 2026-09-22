@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Users, Network, Clapperboard, Search, Flame, Clock3, Database } from 'lucide-react'
-import type { HangzhouProjectDashboard as DashboardData } from '../../types/settings'
+import type { HangzhouProjectDashboard as DashboardData } from '../../../types/settings'
 import { HangzhouStudentCRM } from './HangzhouStudentCRM'
 
 function StatCard(props: { title: string; value: number; icon: React.ReactNode; hint: string }): React.ReactElement {
