@@ -4,6 +4,7 @@ import type { HangzhouProjectDashboard as DashboardData } from '../../../types/s
 import { HangzhouStudentCRM } from './HangzhouStudentCRM'
 import { HangzhouChannelPanel, HangzhouContentPanel, HangzhouIntelligencePanel } from './HangzhouBusinessPanels'
 import { HangzhouAiManager } from './HangzhouAiManager'
+import { HangzhouSchoolPanel, HangzhouCallReviewPanel, HangzhouContractPanel, HangzhouCompetitorPanel } from './HangzhouOperationsPanels'
 
 function StatCard(props: { title: string; value: number; icon: React.ReactNode; hint: string }): React.ReactElement {
   return (
@@ -83,6 +84,13 @@ export function HangzhouProjectDashboard(): React.ReactElement {
           <HangzhouChannelPanel onChanged={refresh} />
           <HangzhouContentPanel onChanged={refresh} />
           <HangzhouIntelligencePanel onChanged={refresh} />
+        </div>
+
+        <div className="mt-6 grid gap-5">
+          <HangzhouSchoolPanel />
+          <HangzhouCallReviewPanel />
+          <HangzhouContractPanel />
+          <HangzhouCompetitorPanel />
         </div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
