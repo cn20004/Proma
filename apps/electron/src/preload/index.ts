@@ -186,6 +186,16 @@ import type {
   HangzhouContentRecord,
   HangzhouIntelligenceInput,
   HangzhouIntelligenceRecord,
+  HangzhouStudentPriority,
+  HangzhouDailyBrief,
+  HangzhouSchoolInput,
+  HangzhouSchoolRecord,
+  HangzhouCallReviewInput,
+  HangzhouCallReviewRecord,
+  HangzhouContractCheckInput,
+  HangzhouContractCheckRecord,
+  HangzhouCompetitorInput,
+  HangzhouCompetitorRecord,
   QuickTaskSubmitInput,
   QuickTaskOpenSessionData,
   VoiceDictationAudioChunkInput,
@@ -477,6 +487,20 @@ export interface ElectronAPI {
   createHangzhouIntelligence: (input: HangzhouIntelligenceInput) => Promise<HangzhouIntelligenceRecord>
   updateHangzhouIntelligence: (id: string, updates: Partial<HangzhouIntelligenceInput>) => Promise<HangzhouIntelligenceRecord>
   deleteHangzhouIntelligence: (id: string) => Promise<void>
+  getHangzhouStudentPriorities: () => Promise<HangzhouStudentPriority[]>
+  getHangzhouDailyBrief: () => Promise<HangzhouDailyBrief>
+  listHangzhouSchools: () => Promise<HangzhouSchoolRecord[]>
+  createHangzhouSchool: (input: HangzhouSchoolInput) => Promise<HangzhouSchoolRecord>
+  deleteHangzhouSchool: (id: string) => Promise<void>
+  listHangzhouCallReviews: () => Promise<HangzhouCallReviewRecord[]>
+  createHangzhouCallReview: (input: HangzhouCallReviewInput) => Promise<HangzhouCallReviewRecord>
+  deleteHangzhouCallReview: (id: string) => Promise<void>
+  listHangzhouContractChecks: () => Promise<HangzhouContractCheckRecord[]>
+  createHangzhouContractCheck: (input: HangzhouContractCheckInput) => Promise<HangzhouContractCheckRecord>
+  deleteHangzhouContractCheck: (id: string) => Promise<void>
+  listHangzhouCompetitors: () => Promise<HangzhouCompetitorRecord[]>
+  createHangzhouCompetitor: (input: HangzhouCompetitorInput) => Promise<HangzhouCompetitorRecord>
+  deleteHangzhouCompetitor: (id: string) => Promise<void>
 
   // ===== 应用设置相关 =====
 
@@ -1776,6 +1800,20 @@ const electronAPI: ElectronAPI = {
   createHangzhouIntelligence: (input: HangzhouIntelligenceInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_INTELLIGENCE, input),
   updateHangzhouIntelligence: (id: string, updates: Partial<HangzhouIntelligenceInput>) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.UPDATE_INTELLIGENCE, id, updates),
   deleteHangzhouIntelligence: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_INTELLIGENCE, id),
+  getHangzhouStudentPriorities: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.GET_STUDENT_PRIORITIES),
+  getHangzhouDailyBrief: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.GET_DAILY_BRIEF),
+  listHangzhouSchools: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.LIST_SCHOOLS),
+  createHangzhouSchool: (input: HangzhouSchoolInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_SCHOOL, input),
+  deleteHangzhouSchool: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_SCHOOL, id),
+  listHangzhouCallReviews: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.LIST_CALL_REVIEWS),
+  createHangzhouCallReview: (input: HangzhouCallReviewInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_CALL_REVIEW, input),
+  deleteHangzhouCallReview: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_CALL_REVIEW, id),
+  listHangzhouContractChecks: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.LIST_CONTRACT_CHECKS),
+  createHangzhouContractCheck: (input: HangzhouContractCheckInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_CONTRACT_CHECK, input),
+  deleteHangzhouContractCheck: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_CONTRACT_CHECK, id),
+  listHangzhouCompetitors: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.LIST_COMPETITORS),
+  createHangzhouCompetitor: (input: HangzhouCompetitorInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_COMPETITOR, input),
+  deleteHangzhouCompetitor: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_COMPETITOR, id),
 
   // 应用设置
   getSettings: () => {
