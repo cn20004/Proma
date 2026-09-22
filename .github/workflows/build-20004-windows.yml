@@ -47,7 +47,7 @@ jobs:
 
       - name: Package Windows x64
         working-directory: apps/electron
-        run: npx electron-builder --win --x64 --publish never -c.appId=com.proma.20004 -c.productName="Proma 20004 Edition"
+        run: npx electron-builder --win --x64 --publish never --config.appId=com.proma.20004 --config.productName="Proma 20004 Edition"
 
       - name: Collect artifacts
         shell: pwsh
