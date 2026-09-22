@@ -328,6 +328,8 @@ export interface AppSettings {
   agentRepeatToolCallLimit?: number
   /** 20004 CostGuard：自动上下文压缩阈值比例，例如 0.25 = 25%。 */
   agentCompactionThresholdRatio?: number
+  /** 20004 Context Guard：单个工具结果允许回填给模型的最大文本字符数。 */
+  agentMaxToolResultChars?: number
   /** 教程推荐横幅是否已关闭 */
   tutorialBannerDismissed?: boolean
   /** 自动归档天数（0 = 禁用，默认 7） */
