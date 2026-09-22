@@ -54,8 +54,12 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-          Get-ChildItem -Path apps/electron/out -Recurse -File |
-            Where-Object { $_.Extension -in '.exe','.msi','.zip','.yml','.blockmap' } |
+          Get-ChildItem -Path apps/electron/out -File |
+            Where-Object {
+              $_.Name -like 'Proma 20004 Edition Setup *.exe' -or
+              $_.Name -like 'Proma 20004 Edition Setup *.exe.blockmap' -or
+              $_.Name -eq 'latest.yml'
+            } |
             ForEach-Object { Copy-Item $_.FullName -Destination artifacts -Force }
 
       - name: Upload Windows package
