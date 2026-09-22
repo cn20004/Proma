@@ -176,6 +176,7 @@ import type {
 import type {
   UserProfile,
   AppSettings,
+  DataSafetyStatus,
   QuickTaskSubmitInput,
   QuickTaskOpenSessionData,
   VoiceDictationAudioChunkInput,
@@ -458,6 +459,12 @@ export interface ElectronAPI {
 
   /** 同步更新应用设置（用于 beforeunload 场景） */
   updateSettingsSync: (updates: Partial<AppSettings>) => boolean
+
+  /** 20004 Edition 数据安全 */
+  getDataSafetyStatus: () => Promise<DataSafetyStatus>
+  createDataSafetyBackup: () => Promise<DataSafetyStatus>
+  openPromaDataDir: () => Promise<void>
+  openPromaBackupDir: () => Promise<void>
 
   /** 获取系统主题（是否深色模式） */
   getSystemTheme: () => Promise<boolean>
@@ -1734,6 +1741,11 @@ const electronAPI: ElectronAPI = {
   updateSettingsSync: (updates: Partial<AppSettings>) => {
     return ipcRenderer.sendSync(SETTINGS_IPC_CHANNELS.UPDATE_SYNC, updates)
   },
+
+  getDataSafetyStatus: () => ipcRenderer.invoke(SETTINGS_IPC_CHANNELS.DATA_SAFETY_STATUS),
+  createDataSafetyBackup: () => ipcRenderer.invoke(SETTINGS_IPC_CHANNELS.DATA_SAFETY_BACKUP_NOW),
+  openPromaDataDir: () => ipcRenderer.invoke(SETTINGS_IPC_CHANNELS.DATA_SAFETY_OPEN_CONFIG_DIR),
+  openPromaBackupDir: () => ipcRenderer.invoke(SETTINGS_IPC_CHANNELS.DATA_SAFETY_OPEN_BACKUP_DIR),
 
   getSystemTheme: () => {
     return ipcRenderer.invoke(SETTINGS_IPC_CHANNELS.GET_SYSTEM_THEME)
