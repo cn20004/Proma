@@ -25,6 +25,7 @@ import {
   Mic,
   HardDriveDownload,
   HardDrive,
+  ShieldCheck,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ShortcutKeycaps } from "@/components/shortcuts/ShortcutKeycaps";
@@ -56,6 +57,7 @@ import {
 import { ChannelSettings } from "./ChannelSettings";
 import { VisionRelaySettings } from "./VisionRelaySettings";
 import { GeneralSettings } from "./GeneralSettings";
+import { CostGuardSettings } from "./CostGuardSettings";
 import { ProxySettings } from "./ProxySettings";
 import { AppearanceSettings } from "./AppearanceSettings";
 import { AboutSettings } from "./AboutSettings";
@@ -78,6 +80,7 @@ interface TabItem {
 
 /** 基础 Tabs（所有模式都有） */
 const BASE_TABS: TabItem[] = [
+  { id: "costguard", label: "20004 魔改版", icon: <ShieldCheck size={16} /> },
   { id: "general", label: "通用设置", icon: <Settings size={16} /> },
   { id: "channels", label: "模型配置", icon: <Radio size={16} /> },
   { id: "vision-relay", label: "视觉助手", icon: <Eye size={16} /> },
@@ -127,6 +130,8 @@ const TAIL_TABS: TabItem[] = [
 /** 根据标签页 id 渲染对应内容 */
 function renderTabContent(tab: SettingsTab): React.ReactElement {
   switch (tab) {
+    case "costguard":
+      return <CostGuardSettings />;
     case "general":
       return <GeneralSettings />;
     case "channels":
