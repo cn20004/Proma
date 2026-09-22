@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: 20004-windows-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-windows:
     name: Build Proma 20004 Edition (Windows x64)
@@ -49,7 +53,7 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-          Get-ChildItem -Path apps/electron/dist -Recurse -File |
+          Get-ChildItem -Path apps/electron/out -Recurse -File |
             Where-Object { $_.Extension -in '.exe','.msi','.zip','.yml','.blockmap' } |
             ForEach-Object { Copy-Item $_.FullName -Destination artifacts -Force }
 
