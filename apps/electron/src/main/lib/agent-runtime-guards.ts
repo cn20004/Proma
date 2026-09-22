@@ -11,7 +11,7 @@
 import type { AgentMessage, AgentToolResult } from '@earendil-works/pi-agent-core'
 import type { JsonSchemaOutputFormat, SDKResultMessage } from '@proma/shared'
 
-export type RuntimeGuardStopReason = 'max_turns' | 'max_budget_usd' | 'output_validation_failed'
+export type RuntimeGuardStopReason = 'max_turns' | 'max_budget_usd' | 'max_tool_calls' | 'repeat_tool_call' | 'output_validation_failed'
 
 export interface RuntimeGuardResultOverride {
   subtype: SDKResultMessage['subtype']
@@ -21,6 +21,7 @@ export interface RuntimeGuardResultOverride {
 
 export interface AgentRuntimeGuard {
   recordMessage(message: AgentMessage): void
+  recordToolCall(name: string, args: unknown): void
   shouldStopBeforeNextTurn(): boolean
   applyToolResult<TDetails>(result: AgentToolResult<TDetails>): AgentToolResult<TDetails>
   getLimitResultOverride(): RuntimeGuardResultOverride | undefined
@@ -30,6 +31,8 @@ export interface AgentRuntimeGuard {
 export interface AgentRuntimeGuardOptions {
   maxTurns?: number
   maxBudgetUsd?: number
+  maxToolCalls?: number
+  repeatToolCallLimit?: number
   outputFormat?: JsonSchemaOutputFormat
 }
 
@@ -41,8 +44,13 @@ interface ValidationFailure {
 interface GuardState {
   assistantTurns: number
   knownCostUsd: number
+  toolCalls: number
+  lastToolSignature?: string
+  repeatToolCalls: number
   maxTurnsReached: boolean
   budgetReached: boolean
+  maxToolCallsReached: boolean
+  repeatToolCallReached: boolean
   stopReason?: RuntimeGuardLimitStopReason
 }
 
@@ -54,14 +62,20 @@ export function createAgentRuntimeGuard(options: AgentRuntimeGuardOptions): Agen
   const state: GuardState = {
     assistantTurns: 0,
     knownCostUsd: 0,
+    toolCalls: 0,
+    repeatToolCalls: 0,
     maxTurnsReached: false,
     budgetReached: false,
+    maxToolCallsReached: false,
+    repeatToolCallReached: false,
   }
   const maxTurns = normalizePositiveNumber(options.maxTurns)
   const maxBudgetUsd = normalizePositiveNumber(options.maxBudgetUsd)
+  const maxToolCalls = normalizePositiveNumber(options.maxToolCalls)
+  const repeatToolCallLimit = normalizePositiveNumber(options.repeatToolCallLimit)
   const getLimitResultOverride = (): RuntimeGuardResultOverride | undefined => {
-    const reason = markLimitStopReason(state, maxTurns, maxBudgetUsd)
-    return reason ? createLimitResultOverride(reason, maxTurns, maxBudgetUsd) : undefined
+    const reason = markLimitStopReason(state, maxTurns, maxBudgetUsd, maxToolCalls, repeatToolCallLimit)
+    return reason ? createLimitResultOverride(reason, maxTurns, maxBudgetUsd, maxToolCalls, repeatToolCallLimit) : undefined
   }
 
   return {
@@ -81,12 +95,24 @@ export function createAgentRuntimeGuard(options: AgentRuntimeGuardOptions): Agen
       }
     },
 
+    recordToolCall(name, args) {
+      state.toolCalls += 1
+      if (maxToolCalls != null && state.toolCalls >= maxToolCalls) state.maxToolCallsReached = true
+      const signature = `${name}:${stableStringify(args)}`
+      if (signature === state.lastToolSignature) state.repeatToolCalls += 1
+      else {
+        state.lastToolSignature = signature
+        state.repeatToolCalls = 1
+      }
+      if (repeatToolCallLimit != null && state.repeatToolCalls >= repeatToolCallLimit) state.repeatToolCallReached = true
+    },
+
     shouldStopBeforeNextTurn() {
-      return markLimitStopReason(state, maxTurns, maxBudgetUsd) != null
+      return markLimitStopReason(state, maxTurns, maxBudgetUsd, maxToolCalls, repeatToolCallLimit) != null
     },
 
     applyToolResult(result) {
-      if (markLimitStopReason(state, maxTurns, maxBudgetUsd)) {
+      if (markLimitStopReason(state, maxTurns, maxBudgetUsd, maxToolCalls, repeatToolCallLimit)) {
         return { ...result, terminate: true }
       }
       return result
@@ -117,10 +143,20 @@ function markLimitStopReason(
   state: GuardState,
   maxTurns: number | undefined,
   maxBudgetUsd: number | undefined,
+  maxToolCalls: number | undefined,
+  repeatToolCallLimit: number | undefined,
 ): RuntimeGuardLimitStopReason | undefined {
   if (state.stopReason) return state.stopReason
   if (state.budgetReached && maxBudgetUsd != null) {
     state.stopReason = 'max_budget_usd'
+    return state.stopReason
+  }
+  if (state.repeatToolCallReached && repeatToolCallLimit != null) {
+    state.stopReason = 'repeat_tool_call'
+    return state.stopReason
+  }
+  if (state.maxToolCallsReached && maxToolCalls != null) {
+    state.stopReason = 'max_tool_calls'
     return state.stopReason
   }
   if (state.maxTurnsReached && maxTurns != null) {
@@ -134,6 +170,8 @@ function createLimitResultOverride(
   reason: RuntimeGuardLimitStopReason,
   maxTurns: number | undefined,
   maxBudgetUsd: number | undefined,
+  maxToolCalls: number | undefined,
+  repeatToolCallLimit: number | undefined,
 ): RuntimeGuardResultOverride {
   if (reason === 'max_budget_usd') {
     return {
@@ -143,6 +181,20 @@ function createLimitResultOverride(
     }
   }
 
+  if (reason === 'max_tool_calls') {
+    return {
+      subtype: 'error_during_execution',
+      terminalReason: 'max_tool_calls',
+      errors: [`已达到工具调用上限（${maxToolCalls}），20004 CostGuard 已停止本次任务。`],
+    }
+  }
+  if (reason === 'repeat_tool_call') {
+    return {
+      subtype: 'error_during_execution',
+      terminalReason: 'repeat_tool_call',
+      errors: [`检测到相同工具与参数连续调用达到 ${repeatToolCallLimit} 次，20004 CostGuard 已熔断。`],
+    }
+  }
   return {
     subtype: 'error_max_turns',
     terminalReason: 'max_turns',
@@ -162,6 +214,18 @@ export function appendOutputFormatInstruction(prompt: string, outputFormat?: Jso
 该 JSON 必须符合 ${schemaName}：${description}
 ${JSON.stringify(outputFormat.schema, null, 2)}
 </output_format>`
+}
+
+function stableStringify(value: unknown): string {
+  try {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b))
+      return JSON.stringify(Object.fromEntries(entries))
+    }
+    return JSON.stringify(value)
+  } catch {
+    return String(value)
+  }
 }
 
 function normalizePositiveNumber(value: number | undefined): number | undefined {
