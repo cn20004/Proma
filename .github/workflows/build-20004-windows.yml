@@ -1,0 +1,62 @@
+name: 20004 Edition Windows Build
+
+on:
+  push:
+    branches:
+      - costguard-v1
+      - 20004-edition
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build Proma 20004 Edition (Windows x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Build Electron
+        run: bun run electron:build
+
+      - name: Sync runtime dependencies
+        run: bun run --filter='@proma/electron' sync:runtime-deps
+
+      - name: Package Windows x64
+        working-directory: apps/electron
+        run: npx electron-builder --win --x64 --publish never
+
+      - name: Collect artifacts
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          Get-ChildItem -Path apps/electron/dist -Recurse -File |
+            Where-Object { $_.Extension -in '.exe','.msi','.zip','.yml','.blockmap' } |
+            ForEach-Object { Copy-Item $_.FullName -Destination artifacts -Force }
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: Proma-20004-Edition-Windows-x64
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 14
