@@ -12,6 +12,16 @@ export function HangzhouChannelPanel({ onChanged }: { onChanged?: () => void }):
   const [items, setItems] = React.useState<HangzhouChannelRecord[]>([])
   const refresh = React.useCallback(async () => setItems(await window.electronAPI.listHangzhouChannels()), [])
   React.useEffect(() => { void refresh() }, [refresh])
+  const relationGroups = React.useMemo(() => {
+    const groups = new Map<string, HangzhouChannelRecord[]>()
+    for (const item of items) {
+      const key = item.parent?.trim() || '未归属'
+      const list = groups.get(key) ?? []
+      list.push(item)
+      groups.set(key, list)
+    }
+    return Array.from(groups.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  }, [items])
   const add = async (): Promise<void> => {
     if (!form.name.trim()) return
     await window.electronAPI.createHangzhouChannel({ ...form, name: form.name.trim() })
@@ -36,6 +46,23 @@ export function HangzhouChannelPanel({ onChanged }: { onChanged?: () => void }):
         <table className="w-full min-w-[760px] text-sm"><thead className="text-left text-xs text-muted-foreground"><tr><th className="p-3">名称</th><th>公司/城市</th><th>上级</th><th>报名</th><th>到校</th><th>签约</th><th>转化</th><th></th></tr></thead><tbody>
           {items.map(x=><tr key={x.id} className="border-t"><td className="p-3 font-medium">{x.name}<div className="text-xs text-muted-foreground">{x.phone||''}</div></td><td>{[x.company,x.city].filter(Boolean).join(' · ')||'—'}</td><td>{x.parent||'—'}</td><td>{x.registrations}</td><td>{x.arrivals}</td><td>{x.signed}</td><td>{x.registrations>0 ? (x.signed/x.registrations*100).toFixed(1)+'%' : '—'}</td><td><Button size="sm" variant="ghost" onClick={()=>{if(window.confirm('删除渠道「'+x.name+'」？')) void window.electronAPI.deleteHangzhouChannel(x.id).then(async()=>{await refresh();onChanged?.()})}}>删除</Button></td></tr>)}
         </tbody></table>}
+    </div>
+    <div className="border-t px-4 py-4">
+      <div className="mb-3 text-sm font-semibold">渠道关系图谱 V1</div>
+      <div className="grid gap-3 md:grid-cols-2">
+        {relationGroups.map(([parent, children]) => (
+          <div key={parent} className="rounded-lg border border-border/60 p-3">
+            <div className="text-sm font-medium">{parent}</div>
+            <div className="mt-2 space-y-1">
+              {children.map((child) => (
+                <div key={child.id} className="text-xs text-muted-foreground">
+                  ↳ {child.name}{child.company ? ' · '+child.company : ''}{child.city ? ' · '+child.city : ''}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 }
