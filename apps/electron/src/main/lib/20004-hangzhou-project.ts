@@ -1,15 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { getConfigDir } from './config-paths'
-import type { HangzhouProjectDashboard } from '../../types'
-
-interface HangzhouStudent {
-  id: string
-  name: string
-  stage?: 'lead' | 'appointment' | 'arrived' | 'trial' | 'signed'
-  intent?: 'low' | 'medium' | 'high'
-  nextFollowUpAt?: number
-}
+import type { HangzhouProjectDashboard, HangzhouStudentInput, HangzhouStudentRecord } from '../../types'
+import { randomUUID } from 'node:crypto'
 
 interface HangzhouChannel {
   id: string
@@ -30,7 +23,7 @@ interface HangzhouIntelligenceItem {
 
 interface HangzhouProjectData {
   version: 1
-  students: HangzhouStudent[]
+  students: HangzhouStudentRecord[]
   channels: HangzhouChannel[]
   contentItems: HangzhouContentItem[]
   intelligenceItems: HangzhouIntelligenceItem[]
@@ -91,4 +84,54 @@ export function getHangzhouProjectDashboard(): HangzhouProjectDashboard {
     )).length,
     updatedAt: data.updatedAt,
   }
+}
+
+
+export function listHangzhouStudents(): HangzhouStudentRecord[] {
+  return readData().students.slice().sort((a, b) => b.updatedAt - a.updatedAt)
+}
+
+export function createHangzhouStudent(input: HangzhouStudentInput): HangzhouStudentRecord {
+  const data = readData()
+  const now = Date.now()
+  const record: HangzhouStudentRecord = {
+    ...input,
+    id: randomUUID(),
+    createdAt: now,
+    updatedAt: now,
+  }
+  data.students.unshift(record)
+  data.updatedAt = now
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+  return record
+}
+
+export function updateHangzhouStudent(
+  id: string,
+  updates: Partial<HangzhouStudentInput>,
+): HangzhouStudentRecord {
+  const data = readData()
+  const index = data.students.findIndex((student) => student.id === id)
+  if (index < 0) throw new Error('学生档案不存在')
+  const current = data.students[index]!
+  const updated: HangzhouStudentRecord = {
+    ...current,
+    ...updates,
+    id: current.id,
+    createdAt: current.createdAt,
+    updatedAt: Date.now(),
+  }
+  data.students[index] = updated
+  data.updatedAt = updated.updatedAt
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+  return updated
+}
+
+export function deleteHangzhouStudent(id: string): void {
+  const data = readData()
+  const next = data.students.filter((student) => student.id !== id)
+  if (next.length === data.students.length) return
+  data.students = next
+  data.updatedAt = Date.now()
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
 }
