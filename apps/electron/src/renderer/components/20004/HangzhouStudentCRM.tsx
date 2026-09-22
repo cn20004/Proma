@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Plus, Trash2, UserRoundPen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { HangzhouStudentInput, HangzhouStudentRecord } from '../../types/settings'
+import type { HangzhouStudentInput, HangzhouStudentRecord } from '../../../types/settings'
 
 const EMPTY_FORM: HangzhouStudentInput = {
   name: '',
