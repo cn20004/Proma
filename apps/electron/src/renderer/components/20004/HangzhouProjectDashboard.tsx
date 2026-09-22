@@ -3,6 +3,7 @@ import { Users, Network, Clapperboard, Search, Flame, Clock3, Database } from 'l
 import type { HangzhouProjectDashboard as DashboardData } from '../../../types/settings'
 import { HangzhouStudentCRM } from './HangzhouStudentCRM'
 import { HangzhouChannelPanel, HangzhouContentPanel, HangzhouIntelligencePanel } from './HangzhouBusinessPanels'
+import { HangzhouAiManager } from './HangzhouAiManager'
 
 function StatCard(props: { title: string; value: number; icon: React.ReactNode; hint: string }): React.ReactElement {
   return (
@@ -73,6 +74,8 @@ export function HangzhouProjectDashboard(): React.ReactElement {
             </div>
           </div>
         </div>
+
+        <HangzhouAiManager />
 
         <HangzhouStudentCRM onChanged={refresh} />
 
