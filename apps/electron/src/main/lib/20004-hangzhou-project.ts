@@ -1,32 +1,15 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { getConfigDir } from './config-paths'
-import type { HangzhouProjectDashboard, HangzhouStudentInput, HangzhouStudentRecord } from '../../types'
+import type { HangzhouProjectDashboard, HangzhouStudentInput, HangzhouStudentRecord, HangzhouChannelInput, HangzhouChannelRecord, HangzhouContentInput, HangzhouContentRecord, HangzhouIntelligenceInput, HangzhouIntelligenceRecord } from '../../types'
 import { randomUUID } from 'node:crypto'
-
-interface HangzhouChannel {
-  id: string
-  name: string
-}
-
-interface HangzhouContentItem {
-  id: string
-  title: string
-  status?: 'idea' | 'script' | 'shot' | 'published'
-}
-
-interface HangzhouIntelligenceItem {
-  id: string
-  title: string
-  confidence?: 'A' | 'B' | 'C' | 'D'
-}
 
 interface HangzhouProjectData {
   version: 1
   students: HangzhouStudentRecord[]
-  channels: HangzhouChannel[]
-  contentItems: HangzhouContentItem[]
-  intelligenceItems: HangzhouIntelligenceItem[]
+  channels: HangzhouChannelRecord[]
+  contentItems: HangzhouContentRecord[]
+  intelligenceItems: HangzhouIntelligenceRecord[]
   updatedAt: number
 }
 
@@ -133,5 +116,82 @@ export function deleteHangzhouStudent(id: string): void {
   if (next.length === data.students.length) return
   data.students = next
   data.updatedAt = Date.now()
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+}
+
+
+export function listHangzhouChannels(): HangzhouChannelRecord[] {
+  return readData().channels.slice().sort((a, b) => b.updatedAt - a.updatedAt)
+}
+export function createHangzhouChannel(input: HangzhouChannelInput): HangzhouChannelRecord {
+  const data = readData()
+  const now = Date.now()
+  const record: HangzhouChannelRecord = { ...input, id: randomUUID(), createdAt: now, updatedAt: now }
+  data.channels.unshift(record); data.updatedAt = now
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+  return record
+}
+export function updateHangzhouChannel(id: string, updates: Partial<HangzhouChannelInput>): HangzhouChannelRecord {
+  const data = readData()
+  const index = data.channels.findIndex((item) => item.id === id)
+  if (index < 0) throw new Error('渠道档案不存在')
+  const current = data.channels[index]!
+  const updated: HangzhouChannelRecord = { ...current, ...updates, id: current.id, createdAt: current.createdAt, updatedAt: Date.now() }
+  data.channels[index] = updated; data.updatedAt = updated.updatedAt
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+  return updated
+}
+export function deleteHangzhouChannel(id: string): void {
+  const data = readData()
+  data.channels = data.channels.filter((item) => item.id !== id)
+  data.updatedAt = Date.now()
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+}
+
+export function listHangzhouContent(): HangzhouContentRecord[] {
+  return readData().contentItems.slice().sort((a, b) => b.updatedAt - a.updatedAt)
+}
+export function createHangzhouContent(input: HangzhouContentInput): HangzhouContentRecord {
+  const data = readData(); const now = Date.now()
+  const record: HangzhouContentRecord = { ...input, id: randomUUID(), createdAt: now, updatedAt: now }
+  data.contentItems.unshift(record); data.updatedAt = now
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+  return record
+}
+export function updateHangzhouContent(id: string, updates: Partial<HangzhouContentInput>): HangzhouContentRecord {
+  const data = readData(); const index = data.contentItems.findIndex((item) => item.id === id)
+  if (index < 0) throw new Error('内容资产不存在')
+  const current = data.contentItems[index]!
+  const updated: HangzhouContentRecord = { ...current, ...updates, id: current.id, createdAt: current.createdAt, updatedAt: Date.now() }
+  data.contentItems[index] = updated; data.updatedAt = updated.updatedAt
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+  return updated
+}
+export function deleteHangzhouContent(id: string): void {
+  const data = readData(); data.contentItems = data.contentItems.filter((item) => item.id !== id); data.updatedAt = Date.now()
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+}
+
+export function listHangzhouIntelligence(): HangzhouIntelligenceRecord[] {
+  return readData().intelligenceItems.slice().sort((a, b) => b.updatedAt - a.updatedAt)
+}
+export function createHangzhouIntelligence(input: HangzhouIntelligenceInput): HangzhouIntelligenceRecord {
+  const data = readData(); const now = Date.now()
+  const record: HangzhouIntelligenceRecord = { ...input, id: randomUUID(), createdAt: now, updatedAt: now }
+  data.intelligenceItems.unshift(record); data.updatedAt = now
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+  return record
+}
+export function updateHangzhouIntelligence(id: string, updates: Partial<HangzhouIntelligenceInput>): HangzhouIntelligenceRecord {
+  const data = readData(); const index = data.intelligenceItems.findIndex((item) => item.id === id)
+  if (index < 0) throw new Error('情报记录不存在')
+  const current = data.intelligenceItems[index]!
+  const updated: HangzhouIntelligenceRecord = { ...current, ...updates, id: current.id, createdAt: current.createdAt, updatedAt: Date.now() }
+  data.intelligenceItems[index] = updated; data.updatedAt = updated.updatedAt
+  writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
+  return updated
+}
+export function deleteHangzhouIntelligence(id: string): void {
+  const data = readData(); data.intelligenceItems = data.intelligenceItems.filter((item) => item.id !== id); data.updatedAt = Date.now()
   writeFileSync(getDataPath(), JSON.stringify(data, null, 2), 'utf-8')
 }
