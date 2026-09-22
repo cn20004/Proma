@@ -330,6 +330,12 @@ export interface AppSettings {
   agentCompactionThresholdRatio?: number
   /** 20004 Context Guard：单个工具结果允许回填给模型的最大文本字符数。 */
   agentMaxToolResultChars?: number
+  /** 20004 Model Router：启用同渠道自动模型分流。 */
+  agentModelRouterEnabled?: boolean
+  /** 20004 Model Router：简单任务优先模型 ID。 */
+  agentCheapModelId?: string
+  /** 20004 Model Router：复杂任务优先模型 ID。 */
+  agentStrongModelId?: string
   /** 教程推荐横幅是否已关闭 */
   tutorialBannerDismissed?: boolean
   /** 自动归档天数（0 = 禁用，默认 7） */
