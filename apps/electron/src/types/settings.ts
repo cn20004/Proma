@@ -430,6 +430,21 @@ export interface DataSafetyStatus {
   backupCount: number
 }
 
+export interface HangzhouProjectDashboard {
+  dataPath: string
+  students: number
+  channels: number
+  contentItems: number
+  intelligenceItems: number
+  highIntentStudents: number
+  pendingFollowUps: number
+  updatedAt: number
+}
+
+export const HANGZHOU_IPC_CHANNELS = {
+  GET_DASHBOARD: '20004:hangzhou:get-dashboard',
+} as const
+
 export const SETTINGS_IPC_CHANNELS = {
   GET: 'settings:get',
   DATA_SAFETY_STATUS: 'settings:data-safety-status',
