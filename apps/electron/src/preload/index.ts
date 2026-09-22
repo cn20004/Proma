@@ -178,6 +178,8 @@ import type {
   AppSettings,
   DataSafetyStatus,
   HangzhouProjectDashboard,
+  HangzhouStudentInput,
+  HangzhouStudentRecord,
   QuickTaskSubmitInput,
   QuickTaskOpenSessionData,
   VoiceDictationAudioChunkInput,
@@ -453,6 +455,10 @@ export interface ElectronAPI {
   // ===== 20004 杭州项目 =====
 
   getHangzhouProjectDashboard: () => Promise<HangzhouProjectDashboard>
+  listHangzhouStudents: () => Promise<HangzhouStudentRecord[]>
+  createHangzhouStudent: (input: HangzhouStudentInput) => Promise<HangzhouStudentRecord>
+  updateHangzhouStudent: (id: string, updates: Partial<HangzhouStudentInput>) => Promise<HangzhouStudentRecord>
+  deleteHangzhouStudent: (id: string) => Promise<void>
 
   // ===== 应用设置相关 =====
 
@@ -1736,6 +1742,10 @@ const electronAPI: ElectronAPI = {
 
   // 20004 杭州项目
   getHangzhouProjectDashboard: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.GET_DASHBOARD),
+  listHangzhouStudents: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.LIST_STUDENTS),
+  createHangzhouStudent: (input: HangzhouStudentInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_STUDENT, input),
+  updateHangzhouStudent: (id: string, updates: Partial<HangzhouStudentInput>) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.UPDATE_STUDENT, id, updates),
+  deleteHangzhouStudent: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_STUDENT, id),
 
   // 应用设置
   getSettings: () => {
