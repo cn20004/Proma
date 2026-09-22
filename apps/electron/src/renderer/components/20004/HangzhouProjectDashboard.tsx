@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Users, Network, Clapperboard, Search, Flame, Clock3, Database } from 'lucide-react'
 import type { HangzhouProjectDashboard as DashboardData } from '../../../types/settings'
 import { HangzhouStudentCRM } from './HangzhouStudentCRM'
+import { HangzhouChannelPanel, HangzhouContentPanel, HangzhouIntelligencePanel } from './HangzhouBusinessPanels'
 
 function StatCard(props: { title: string; value: number; icon: React.ReactNode; hint: string }): React.ReactElement {
   return (
@@ -74,6 +75,12 @@ export function HangzhouProjectDashboard(): React.ReactElement {
         </div>
 
         <HangzhouStudentCRM onChanged={refresh} />
+
+        <div className="mt-6 grid gap-5">
+          <HangzhouChannelPanel onChanged={refresh} />
+          <HangzhouContentPanel onChanged={refresh} />
+          <HangzhouIntelligencePanel onChanged={refresh} />
+        </div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           {[
