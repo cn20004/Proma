@@ -1349,8 +1349,23 @@ export class AgentOrchestrator {
       }
 
       // 13. 构建 Adapter 查询选项
-      const maxTurns = appSettings.agentMaxTurns && appSettings.agentMaxTurns > 0
-        ? appSettings.agentMaxTurns
+      const costGuardEnabled = appSettings.costGuardEnabled ?? true
+      const maxTurns = costGuardEnabled
+        ? (appSettings.agentMaxTurns && appSettings.agentMaxTurns > 0 ? appSettings.agentMaxTurns : 80)
+        : (appSettings.agentMaxTurns && appSettings.agentMaxTurns > 0 ? appSettings.agentMaxTurns : undefined)
+      const maxBudgetUsd = costGuardEnabled
+        ? (appSettings.agentMaxBudgetUsd && appSettings.agentMaxBudgetUsd > 0 ? appSettings.agentMaxBudgetUsd : 0.5)
+        : (appSettings.agentMaxBudgetUsd && appSettings.agentMaxBudgetUsd > 0 ? appSettings.agentMaxBudgetUsd : undefined)
+      const maxToolCalls = costGuardEnabled
+        ? (appSettings.agentMaxToolCalls && appSettings.agentMaxToolCalls > 0 ? appSettings.agentMaxToolCalls : 100)
+        : undefined
+      const repeatToolCallLimit = costGuardEnabled
+        ? (appSettings.agentRepeatToolCallLimit && appSettings.agentRepeatToolCallLimit > 0 ? appSettings.agentRepeatToolCallLimit : 5)
+        : undefined
+      const compactionThresholdRatio = costGuardEnabled
+        ? (appSettings.agentCompactionThresholdRatio && appSettings.agentCompactionThresholdRatio > 0
+            ? appSettings.agentCompactionThresholdRatio
+            : 0.25)
         : undefined
       const piReasoningCapability = await resolvePiReasoningCapability(channel.provider, selectedModelId)
       const piThinkingLevel = resolvePiThinkingLevel(appSettings, sessionMeta, channel.provider, selectedModelId, piReasoningCapability)
@@ -1525,9 +1540,10 @@ export class AgentOrchestrator {
             openAIThinkingLevel: piThinkingLevel!,
           }),
         thinkingLevel: piThinkingLevel!,
-        ...(appSettings.agentMaxBudgetUsd != null && appSettings.agentMaxBudgetUsd > 0 && {
-          maxBudgetUsd: appSettings.agentMaxBudgetUsd,
-        }),
+        ...(maxBudgetUsd != null && { maxBudgetUsd }),
+        ...(maxToolCalls != null && { maxToolCalls }),
+        ...(repeatToolCallLimit != null && { repeatToolCallLimit }),
+        ...(compactionThresholdRatio != null && { compactionThresholdRatio }),
         ...(piCustomTools.length > 0 && { customTools: piCustomTools as PiAgentQueryOptions['customTools'] }),
         onSessionId: handleSessionId,
         onPiEntryBindings: (bindings) => {
