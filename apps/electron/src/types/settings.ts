@@ -451,6 +451,50 @@ export interface HangzhouStudentRecord {
 
 export type HangzhouStudentInput = Omit<HangzhouStudentRecord, 'id' | 'createdAt' | 'updatedAt'>
 
+export interface HangzhouChannelRecord {
+  id: string
+  name: string
+  company?: string
+  city?: string
+  phone?: string
+  parent?: string
+  registrations: number
+  arrivals: number
+  signed: number
+  notes?: string
+  createdAt: number
+  updatedAt: number
+}
+export type HangzhouChannelInput = Omit<HangzhouChannelRecord, 'id' | 'createdAt' | 'updatedAt'>
+
+export interface HangzhouContentRecord {
+  id: string
+  title: string
+  platform?: string
+  status: 'idea' | 'script' | 'shot' | 'published'
+  hook?: string
+  views?: number
+  leads?: number
+  notes?: string
+  createdAt: number
+  updatedAt: number
+}
+export type HangzhouContentInput = Omit<HangzhouContentRecord, 'id' | 'createdAt' | 'updatedAt'>
+
+export interface HangzhouIntelligenceRecord {
+  id: string
+  title: string
+  entityType?: string
+  subject?: string
+  sourceUrl?: string
+  evidence?: string
+  confidence: 'A' | 'B' | 'C' | 'D'
+  notes?: string
+  createdAt: number
+  updatedAt: number
+}
+export type HangzhouIntelligenceInput = Omit<HangzhouIntelligenceRecord, 'id' | 'createdAt' | 'updatedAt'>
+
 export interface HangzhouProjectDashboard {
   dataPath: string
   students: number
@@ -468,6 +512,18 @@ export const HANGZHOU_IPC_CHANNELS = {
   CREATE_STUDENT: '20004:hangzhou:create-student',
   UPDATE_STUDENT: '20004:hangzhou:update-student',
   DELETE_STUDENT: '20004:hangzhou:delete-student',
+  LIST_CHANNELS: '20004:hangzhou:list-channels',
+  CREATE_CHANNEL: '20004:hangzhou:create-channel',
+  UPDATE_CHANNEL: '20004:hangzhou:update-channel',
+  DELETE_CHANNEL: '20004:hangzhou:delete-channel',
+  LIST_CONTENT: '20004:hangzhou:list-content',
+  CREATE_CONTENT: '20004:hangzhou:create-content',
+  UPDATE_CONTENT: '20004:hangzhou:update-content',
+  DELETE_CONTENT: '20004:hangzhou:delete-content',
+  LIST_INTELLIGENCE: '20004:hangzhou:list-intelligence',
+  CREATE_INTELLIGENCE: '20004:hangzhou:create-intelligence',
+  UPDATE_INTELLIGENCE: '20004:hangzhou:update-intelligence',
+  DELETE_INTELLIGENCE: '20004:hangzhou:delete-intelligence',
 } as const
 
 export const SETTINGS_IPC_CHANNELS = {
