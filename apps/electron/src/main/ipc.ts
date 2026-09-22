@@ -155,7 +155,7 @@ import type {
   BrowserTabInput,
   BrowserCreateTabInput,
 } from '@proma/shared'
-import type { UserProfile, AppSettings } from '../types'
+import type { UserProfile, AppSettings, HangzhouStudentInput } from '../types'
 import { getRuntimeStatus, getGitRepoStatus, reinitializeRuntime } from './lib/runtime-init'
 import { browserController } from './lib/browser-controller'
 import { acknowledgeTerminalOutput, closeTerminalsForSession, createTerminal, getTerminalSnapshot, killTerminal, resizeTerminal, writeTerminal } from './lib/terminal-service'
@@ -223,7 +223,7 @@ import { extractTextFromAttachment } from './lib/document-parser'
 import { getUserProfile, updateUserProfile } from './lib/user-profile-service'
 import { getSettings, updateSettings } from './lib/settings-service'
 import { createDataSafetyBackup, getDataSafetyStatus } from './lib/20004-data-safety'
-import { getHangzhouProjectDashboard } from './lib/20004-hangzhou-project'
+import { getHangzhouProjectDashboard, listHangzhouStudents, createHangzhouStudent, updateHangzhouStudent, deleteHangzhouStudent } from './lib/20004-hangzhou-project'
 import { refreshAgentIslandConfiguration, markAgentIslandSessionViewed } from './lib/agent-island-service'
 import { getAgentStatusHoverWindow } from './agent-status-hover-window'
 import { setDockBadgeCount } from './lib/dock-badge-service'
@@ -2201,6 +2201,23 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(
     HANGZHOU_IPC_CHANNELS.GET_DASHBOARD,
     async () => getHangzhouProjectDashboard(),
+  )
+
+  ipcMain.handle(
+    HANGZHOU_IPC_CHANNELS.LIST_STUDENTS,
+    async () => listHangzhouStudents(),
+  )
+  ipcMain.handle(
+    HANGZHOU_IPC_CHANNELS.CREATE_STUDENT,
+    async (_, input: HangzhouStudentInput) => createHangzhouStudent(input),
+  )
+  ipcMain.handle(
+    HANGZHOU_IPC_CHANNELS.UPDATE_STUDENT,
+    async (_, id: string, updates: Partial<HangzhouStudentInput>) => updateHangzhouStudent(id, updates),
+  )
+  ipcMain.handle(
+    HANGZHOU_IPC_CHANNELS.DELETE_STUDENT,
+    async (_, id: string) => deleteHangzhouStudent(id),
   )
 
   // ===== 应用设置相关 =====
