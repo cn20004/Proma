@@ -422,8 +422,20 @@ export interface PersistedTabSettings {
 }
 
 /** 设置 IPC 通道 */
+export interface DataSafetyStatus {
+  configDir: string
+  backupRoot: string
+  latestBackupPath?: string
+  latestBackupAt?: number
+  backupCount: number
+}
+
 export const SETTINGS_IPC_CHANNELS = {
   GET: 'settings:get',
+  DATA_SAFETY_STATUS: 'settings:data-safety-status',
+  DATA_SAFETY_BACKUP_NOW: 'settings:data-safety-backup-now',
+  DATA_SAFETY_OPEN_CONFIG_DIR: 'settings:data-safety-open-config-dir',
+  DATA_SAFETY_OPEN_BACKUP_DIR: 'settings:data-safety-open-backup-dir',
   UPDATE: 'settings:update',
   UPDATE_SYNC: 'settings:update-sync',
   GET_SYSTEM_THEME: 'settings:get-system-theme',
