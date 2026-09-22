@@ -7,7 +7,7 @@
 
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import { IPC_CHANNELS, CHANNEL_IPC_CHANNELS, CHAT_IPC_CHANNELS, AGENT_IPC_CHANNELS, ENVIRONMENT_IPC_CHANNELS, INSTALLER_IPC_CHANNELS, PROXY_IPC_CHANNELS, GITHUB_RELEASE_IPC_CHANNELS, SYSTEM_PROMPT_IPC_CHANNELS, CHAT_TOOL_IPC_CHANNELS, FEISHU_IPC_CHANNELS, DINGTALK_IPC_CHANNELS, SLACK_IPC_CHANNELS, WECHAT_IPC_CHANNELS, AUTOMATION_IPC_CHANNELS, PLANNING_IPC_CHANNELS, VAULT_IPC_CHANNELS, AGENT_ISLAND_IPC_CHANNELS, TERMINAL_IPC_CHANNELS } from '@proma/shared'
-import { USER_PROFILE_IPC_CHANNELS, SETTINGS_IPC_CHANNELS, SCRATCH_PAD_IPC_CHANNELS, APP_ICON_IPC_CHANNELS, DOCK_BADGE_IPC_CHANNELS, STORAGE_IPC_CHANNELS } from '../types'
+import { USER_PROFILE_IPC_CHANNELS, SETTINGS_IPC_CHANNELS, HANGZHOU_IPC_CHANNELS, SCRATCH_PAD_IPC_CHANNELS, APP_ICON_IPC_CHANNELS, DOCK_BADGE_IPC_CHANNELS, STORAGE_IPC_CHANNELS } from '../types'
 import type {
   RuntimeStatus,
   GitRepoStatus,
@@ -177,6 +177,7 @@ import type {
   UserProfile,
   AppSettings,
   DataSafetyStatus,
+  HangzhouProjectDashboard,
   QuickTaskSubmitInput,
   QuickTaskOpenSessionData,
   VoiceDictationAudioChunkInput,
@@ -448,6 +449,10 @@ export interface ElectronAPI {
 
   /** 更新用户档案 */
   updateUserProfile: (updates: Partial<UserProfile>) => Promise<UserProfile>
+
+  // ===== 20004 杭州项目 =====
+
+  getHangzhouProjectDashboard: () => Promise<HangzhouProjectDashboard>
 
   // ===== 应用设置相关 =====
 
@@ -1728,6 +1733,9 @@ const electronAPI: ElectronAPI = {
   updateUserProfile: (updates: Partial<UserProfile>) => {
     return ipcRenderer.invoke(USER_PROFILE_IPC_CHANNELS.UPDATE, updates)
   },
+
+  // 20004 杭州项目
+  getHangzhouProjectDashboard: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.GET_DASHBOARD),
 
   // 应用设置
   getSettings: () => {
