@@ -95,7 +95,7 @@ type SkillLoadResult = ReturnType<ResourceLoader['getSkills']>
 
 const PI_NATIVE_MAX_RETRIES = 8
 const PI_NATIVE_RETRY_BASE_DELAY_MS = 1_000
-const MAX_AUTOMATIC_COMPACTION_CONTINUATIONS = 20
+const MAX_AUTOMATIC_COMPACTION_CONTINUATIONS = 5
 
 export function shouldMarkCompactionAfterCompletedTurn(
   terminalResult: SDKMessage | undefined,
@@ -115,6 +115,10 @@ export interface PiAgentQueryOptions extends AgentQueryInput {
   channelId?: string
   channelName?: string
   maxTurns?: number
+  maxToolCalls?: number
+  repeatToolCallLimit?: number
+  compactionThresholdRatio?: number
+  maxToolResultChars?: number
   permissionMode: PromaPermissionMode
   canUseTool?: (
     toolName: string,
@@ -1319,7 +1323,37 @@ function wrapCustomToolDefinitions(
     wrapToolWithPermission(tool as unknown as ToolDefinition<TSchema, unknown, unknown>, { canUseTool }) as ToolDefinition)
 }
 
-export function installRuntimeGuardHooks(session: AgentSession, guard: AgentRuntimeGuard): void {
+function truncateToolResultContent<T>(content: T, maxChars: number | undefined): T {
+  if (!maxChars || maxChars <= 0) return content
+  const keep = (text: string): string => {
+    if (text.length <= maxChars) return text
+    const head = Math.max(1, Math.floor(maxChars * 0.7))
+    const tail = Math.max(1, maxChars - head)
+    return `${text.slice(0, head)}\n\n[20004 Context Guard: 中间过长内容已裁剪 ${text.length - maxChars} 字符]\n\n${text.slice(-tail)}`
+  }
+
+  if (typeof content === 'string') return keep(content) as T
+  if (!Array.isArray(content)) return content
+
+  let remaining = maxChars
+  const next = content.map((block) => {
+    if (!block || typeof block !== 'object') return block
+    const record = block as Record<string, unknown>
+    if (record.type !== 'text' || typeof record.text !== 'string') return block
+    if (remaining <= 0) return { ...record, text: '[20004 Context Guard: 后续文本工具输出已省略]' }
+    const text = record.text
+    const allowed = Math.min(remaining, text.length)
+    remaining -= allowed
+    return { ...record, text: keep(text.slice(0, allowed)) }
+  })
+  return next as T
+}
+
+export function installRuntimeGuardHooks(
+  session: AgentSession,
+  guard: AgentRuntimeGuard,
+  inputMaxToolResultChars?: number,
+): void {
   const previousAfterToolCall = session.agent.afterToolCall
   session.agent.afterToolCall = async (context, signal) => {
     const previousResult = await previousAfterToolCall?.(context, signal)
@@ -1328,23 +1362,25 @@ export function installRuntimeGuardHooks(session: AgentSession, guard: AgentRunt
       details: previousResult?.details ?? context.result.details,
       terminate: previousResult?.terminate ?? context.result.terminate,
     }
+    guard.recordToolCall(context.toolCall.name, context.toolCall.arguments)
     const sanitizedContent = sanitizeToolResultImageContent(resultAfterPreviousHooks.content)
+    const contextGuardedContent = truncateToolResultContent(sanitizedContent, inputMaxToolResultChars)
     const guardedResult = guard.applyToolResult({
       ...resultAfterPreviousHooks,
-      content: sanitizedContent,
+      content: contextGuardedContent,
     })
 
     if (
       !previousResult
       && guardedResult.terminate === context.result.terminate
-      && sanitizedContent === context.result.content
+      && contextGuardedContent === context.result.content
     ) {
       return undefined
     }
 
     return {
       ...previousResult,
-      content: sanitizedContent,
+      content: contextGuardedContent,
       terminate: guardedResult.terminate,
     }
   }
@@ -1421,6 +1457,7 @@ export class PiAgentAdapter implements AgentProviderAdapter {
       const { modelRuntime, model } = await buildModel(sdk, input)
       const autoCompactionReserveTokens = calculatePiAutoCompactionReserveTokens(
         model.contextWindow ?? DEFAULT_CONTEXT_WINDOW,
+        input.compactionThresholdRatio,
       )
       let compactContextRequested = false
       let pendingCompactionContinuation: string | undefined
@@ -1580,7 +1617,7 @@ export class PiAgentAdapter implements AgentProviderAdapter {
         requestProxyDispatcher,
         () => providerStreamFn(requestModel, context, options),
       )
-      installRuntimeGuardHooks(session, runtimeGuard)
+      installRuntimeGuardHooks(session, runtimeGuard, input.maxToolResultChars)
       installCurrentSessionCompactionHooks(session)
       active.session = session
       resolveActiveReady(active, session)
