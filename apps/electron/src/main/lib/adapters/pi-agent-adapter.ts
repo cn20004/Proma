@@ -113,6 +113,9 @@ export interface PiAgentQueryOptions extends AgentQueryInput {
   channelId?: string
   channelName?: string
   maxTurns?: number
+  maxToolCalls?: number
+  repeatToolCallLimit?: number
+  compactionThresholdRatio?: number
   permissionMode: PromaPermissionMode
   canUseTool?: (
     toolName: string,
@@ -1275,6 +1278,7 @@ function wrapCustomToolDefinitions(
 export function installRuntimeGuardHooks(session: AgentSession, guard: AgentRuntimeGuard): void {
   const previousAfterToolCall = session.agent.afterToolCall
   session.agent.afterToolCall = async (context, signal) => {
+    guard.recordToolCall(context.toolCall.name, context.toolCall.arguments)
     const previousResult = await previousAfterToolCall?.(context, signal)
     const resultAfterPreviousHooks = {
       content: previousResult?.content ?? context.result.content,
@@ -1374,6 +1378,7 @@ export class PiAgentAdapter implements AgentProviderAdapter {
       const { modelRuntime, model } = await buildModel(sdk, input)
       const autoCompactionReserveTokens = calculatePiAutoCompactionReserveTokens(
         model.contextWindow ?? DEFAULT_CONTEXT_WINDOW,
+        input.compactionThresholdRatio,
       )
       let compactContextRequested = false
       let pendingCompactionContinuation: string | undefined
