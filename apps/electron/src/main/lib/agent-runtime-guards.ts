@@ -11,7 +11,7 @@
 import type { AgentMessage, AgentToolResult } from '@earendil-works/pi-agent-core'
 import type { JsonSchemaOutputFormat, SDKResultMessage } from '@proma/shared'
 
-export type RuntimeGuardStopReason = 'max_turns' | 'max_budget_usd' | 'output_validation_failed'
+export type RuntimeGuardStopReason = 'max_turns' | 'max_budget_usd' | 'max_tool_calls' | 'repeat_tool_call' | 'output_validation_failed'
 
 export interface RuntimeGuardResultOverride {
   subtype: SDKResultMessage['subtype']
@@ -21,6 +21,7 @@ export interface RuntimeGuardResultOverride {
 
 export interface AgentRuntimeGuard {
   recordMessage(message: AgentMessage): void
+  recordToolCall(name: string, args: unknown): void
   shouldStopBeforeNextTurn(): boolean
   applyToolResult<TDetails>(result: AgentToolResult<TDetails>): AgentToolResult<TDetails>
   getLimitResultOverride(): RuntimeGuardResultOverride | undefined
@@ -30,6 +31,8 @@ export interface AgentRuntimeGuard {
 export interface AgentRuntimeGuardOptions {
   maxTurns?: number
   maxBudgetUsd?: number
+  maxToolCalls?: number
+  repeatToolCallLimit?: number
   outputFormat?: JsonSchemaOutputFormat
 }
 
@@ -41,8 +44,13 @@ interface ValidationFailure {
 interface GuardState {
   assistantTurns: number
   knownCostUsd: number
+  toolCalls: number
+  lastToolSignature?: string
+  repeatToolCalls: number
   maxTurnsReached: boolean
   budgetReached: boolean
+  maxToolCallsReached: boolean
+  repeatToolCallReached: boolean
   stopReason?: RuntimeGuardLimitStopReason
 }
 
@@ -54,8 +62,12 @@ export function createAgentRuntimeGuard(options: AgentRuntimeGuardOptions): Agen
   const state: GuardState = {
     assistantTurns: 0,
     knownCostUsd: 0,
+    toolCalls: 0,
+    repeatToolCalls: 0,
     maxTurnsReached: false,
     budgetReached: false,
+    maxToolCallsReached: false,
+    repeatToolCallReached: false,
   }
   const maxTurns = normalizePositiveNumber(options.maxTurns)
   const maxBudgetUsd = normalizePositiveNumber(options.maxBudgetUsd)
