@@ -143,10 +143,20 @@ function markLimitStopReason(
   state: GuardState,
   maxTurns: number | undefined,
   maxBudgetUsd: number | undefined,
+  maxToolCalls: number | undefined,
+  repeatToolCallLimit: number | undefined,
 ): RuntimeGuardLimitStopReason | undefined {
   if (state.stopReason) return state.stopReason
   if (state.budgetReached && maxBudgetUsd != null) {
     state.stopReason = 'max_budget_usd'
+    return state.stopReason
+  }
+  if (state.repeatToolCallReached && repeatToolCallLimit != null) {
+    state.stopReason = 'repeat_tool_call'
+    return state.stopReason
+  }
+  if (state.maxToolCallsReached && maxToolCalls != null) {
+    state.stopReason = 'max_tool_calls'
     return state.stopReason
   }
   if (state.maxTurnsReached && maxTurns != null) {
@@ -160,6 +170,8 @@ function createLimitResultOverride(
   reason: RuntimeGuardLimitStopReason,
   maxTurns: number | undefined,
   maxBudgetUsd: number | undefined,
+  maxToolCalls: number | undefined,
+  repeatToolCallLimit: number | undefined,
 ): RuntimeGuardResultOverride {
   if (reason === 'max_budget_usd') {
     return {
@@ -169,6 +181,20 @@ function createLimitResultOverride(
     }
   }
 
+  if (reason === 'max_tool_calls') {
+    return {
+      subtype: 'error_during_execution',
+      terminalReason: 'max_tool_calls',
+      errors: [`已达到工具调用上限（${maxToolCalls}），20004 CostGuard 已停止本次任务。`],
+    }
+  }
+  if (reason === 'repeat_tool_call') {
+    return {
+      subtype: 'error_during_execution',
+      terminalReason: 'repeat_tool_call',
+      errors: [`检测到相同工具与参数连续调用达到 ${repeatToolCallLimit} 次，20004 CostGuard 已熔断。`],
+    }
+  }
   return {
     subtype: 'error_max_turns',
     terminalReason: 'max_turns',
@@ -188,6 +214,18 @@ export function appendOutputFormatInstruction(prompt: string, outputFormat?: Jso
 该 JSON 必须符合 ${schemaName}：${description}
 ${JSON.stringify(outputFormat.schema, null, 2)}
 </output_format>`
+}
+
+function stableStringify(value: unknown): string {
+  try {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b))
+      return JSON.stringify(Object.fromEntries(entries))
+    }
+    return JSON.stringify(value)
+  } catch {
+    return String(value)
+  }
 }
 
 function normalizePositiveNumber(value: number | undefined): number | undefined {
