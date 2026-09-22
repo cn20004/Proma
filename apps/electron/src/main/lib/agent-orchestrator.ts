@@ -920,8 +920,23 @@ export class AgentOrchestrator {
       pendingSkillActivations = mergeSkillActivations(pendingSkillActivations, activations)
       this.recordUserSkillActivations(sessionId, userMessageUuid, activations)
     }
-    // 委派子会话必须继承当前实际运行的模型；未显式传入时与 runtime 的默认值保持一致。
-    const selectedModelId = modelId || DEFAULT_MODEL_ID
+    // 20004 Model Router：仅在当前渠道内分流，避免跨渠道切换凭据带来的副作用。
+    const requestedModelId = modelId || DEFAULT_MODEL_ID
+    const routerEnabled = appSettings.agentModelRouterEnabled === true
+    const enabledModelIds = new Set((channel.models ?? []).filter((item) => item.enabled !== false).map((item) => item.id))
+    const complexTaskPattern = /(深度|研究|架构|重构|调试|debug|review|审查|全面|复杂|多步|实现|开发|代码|证据|调查|竞品|批量|分析)/i
+    const taskLooksComplex = userMessage.length > 1200 || complexTaskPattern.test(userMessage)
+    const routerCandidate = taskLooksComplex
+      ? appSettings.agentStrongModelId
+      : appSettings.agentCheapModelId
+    const selectedModelId = routerEnabled
+      && routerCandidate
+      && enabledModelIds.has(routerCandidate)
+      ? routerCandidate
+      : requestedModelId
+    if (routerEnabled && selectedModelId !== requestedModelId) {
+      console.log(`[20004 Model Router] ${taskLooksComplex ? '复杂任务' : '简单任务'}：${requestedModelId} → ${selectedModelId}`)
+    }
     let resolvedModel = selectedModelId
     let titleGenerationStarted = false
     /** 捕获到的 SDK session ID（用于 resume / recovery） */
