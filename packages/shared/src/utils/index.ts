@@ -30,6 +30,7 @@ export {
 export { calculateContextUsageRatio } from './context-usage'
 export {
   PI_AUTO_COMPACTION_THRESHOLD_RATIO,
+  normalizePiAutoCompactionThresholdRatio,
   calculatePiAutoCompactionReserveTokens,
   calculatePiAutoCompactionThresholdTokens,
 } from './pi-compaction'
