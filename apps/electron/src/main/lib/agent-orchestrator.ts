@@ -964,8 +964,23 @@ export class AgentOrchestrator {
       pendingSkillActivations = mergeSkillActivations(pendingSkillActivations, activations)
       this.recordUserSkillActivations(sessionId, userMessageUuid, activations)
     }
-    // 委派子会话必须继承当前实际运行的模型；未显式传入时与 runtime 的默认值保持一致。
-    const selectedModelId = modelId || DEFAULT_MODEL_ID
+    // 20004 Model Router：仅在当前渠道内分流，避免跨渠道切换凭据带来的副作用。
+    const requestedModelId = modelId || DEFAULT_MODEL_ID
+    const routerEnabled = appSettings.agentModelRouterEnabled === true
+    const enabledModelIds = new Set((channel.models ?? []).filter((item) => item.enabled !== false).map((item) => item.id))
+    const complexTaskPattern = /(深度|研究|架构|重构|调试|debug|review|审查|全面|复杂|多步|实现|开发|代码|证据|调查|竞品|批量|分析)/i
+    const taskLooksComplex = userMessage.length > 1200 || complexTaskPattern.test(userMessage)
+    const routerCandidate = taskLooksComplex
+      ? appSettings.agentStrongModelId
+      : appSettings.agentCheapModelId
+    const selectedModelId = routerEnabled
+      && routerCandidate
+      && enabledModelIds.has(routerCandidate)
+      ? routerCandidate
+      : requestedModelId
+    if (routerEnabled && selectedModelId !== requestedModelId) {
+      console.log(`[20004 Model Router] ${taskLooksComplex ? '复杂任务' : '简单任务'}：${requestedModelId} → ${selectedModelId}`)
+    }
     let resolvedModel = selectedModelId
     let titleGenerationStarted = false
     /** 捕获到的 SDK session ID（用于 resume / recovery） */
@@ -1465,8 +1480,28 @@ export class AgentOrchestrator {
       }
 
       // 13. 构建 Adapter 查询选项
-      const maxTurns = appSettings.agentMaxTurns && appSettings.agentMaxTurns > 0
-        ? appSettings.agentMaxTurns
+      const costGuardEnabled = appSettings.costGuardEnabled ?? true
+      const maxTurns = costGuardEnabled
+        ? (appSettings.agentMaxTurns && appSettings.agentMaxTurns > 0 ? appSettings.agentMaxTurns : 80)
+        : (appSettings.agentMaxTurns && appSettings.agentMaxTurns > 0 ? appSettings.agentMaxTurns : undefined)
+      const maxBudgetUsd = costGuardEnabled
+        ? (appSettings.agentMaxBudgetUsd && appSettings.agentMaxBudgetUsd > 0 ? appSettings.agentMaxBudgetUsd : 0.5)
+        : (appSettings.agentMaxBudgetUsd && appSettings.agentMaxBudgetUsd > 0 ? appSettings.agentMaxBudgetUsd : undefined)
+      const maxToolCalls = costGuardEnabled
+        ? (appSettings.agentMaxToolCalls && appSettings.agentMaxToolCalls > 0 ? appSettings.agentMaxToolCalls : 100)
+        : undefined
+      const repeatToolCallLimit = costGuardEnabled
+        ? (appSettings.agentRepeatToolCallLimit && appSettings.agentRepeatToolCallLimit > 0 ? appSettings.agentRepeatToolCallLimit : 5)
+        : undefined
+      const compactionThresholdRatio = costGuardEnabled
+        ? (appSettings.agentCompactionThresholdRatio && appSettings.agentCompactionThresholdRatio > 0
+            ? appSettings.agentCompactionThresholdRatio
+            : 0.25)
+        : undefined
+      const maxToolResultChars = costGuardEnabled
+        ? (appSettings.agentMaxToolResultChars && appSettings.agentMaxToolResultChars > 0
+            ? appSettings.agentMaxToolResultChars
+            : 60_000)
         : undefined
       const piReasoningCapability = await resolvePiReasoningCapability(channel.provider, selectedModelId)
       const piThinkingLevel = resolvePiThinkingLevel(appSettings, sessionMeta, channel.provider, selectedModelId, piReasoningCapability)
@@ -1652,9 +1687,11 @@ export class AgentOrchestrator {
             openAIThinkingLevel: piThinkingLevel!,
           }),
         thinkingLevel: piThinkingLevel!,
-        ...(appSettings.agentMaxBudgetUsd != null && appSettings.agentMaxBudgetUsd > 0 && {
-          maxBudgetUsd: appSettings.agentMaxBudgetUsd,
-        }),
+        ...(maxBudgetUsd != null && { maxBudgetUsd }),
+        ...(maxToolCalls != null && { maxToolCalls }),
+        ...(repeatToolCallLimit != null && { repeatToolCallLimit }),
+        ...(compactionThresholdRatio != null && { compactionThresholdRatio }),
+        ...(maxToolResultChars != null && { maxToolResultChars }),
         ...(piCustomTools.length > 0 && { customTools: piCustomTools as PiAgentQueryOptions['customTools'] }),
         onSessionId: handleSessionId,
         onPiEntryBindings: (bindings) => {
