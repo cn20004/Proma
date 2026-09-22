@@ -155,7 +155,7 @@ import type {
   BrowserTabInput,
   BrowserCreateTabInput,
 } from '@proma/shared'
-import type { UserProfile, AppSettings, HangzhouStudentInput, HangzhouChannelInput, HangzhouContentInput, HangzhouIntelligenceInput } from '../types'
+import type { UserProfile, AppSettings, HangzhouStudentInput, HangzhouChannelInput, HangzhouContentInput, HangzhouIntelligenceInput, HangzhouSchoolInput, HangzhouCallReviewInput, HangzhouContractCheckInput, HangzhouCompetitorInput } from '../types'
 import { getRuntimeStatus, getGitRepoStatus, reinitializeRuntime } from './lib/runtime-init'
 import { browserController } from './lib/browser-controller'
 import { acknowledgeTerminalOutput, closeTerminalsForSession, createTerminal, getTerminalSnapshot, killTerminal, resizeTerminal, writeTerminal } from './lib/terminal-service'
@@ -223,7 +223,7 @@ import { extractTextFromAttachment } from './lib/document-parser'
 import { getUserProfile, updateUserProfile } from './lib/user-profile-service'
 import { getSettings, updateSettings } from './lib/settings-service'
 import { createDataSafetyBackup, getDataSafetyStatus } from './lib/20004-data-safety'
-import { getHangzhouProjectDashboard, listHangzhouStudents, createHangzhouStudent, updateHangzhouStudent, deleteHangzhouStudent, listHangzhouChannels, createHangzhouChannel, updateHangzhouChannel, deleteHangzhouChannel, listHangzhouContent, createHangzhouContent, updateHangzhouContent, deleteHangzhouContent, listHangzhouIntelligence, createHangzhouIntelligence, updateHangzhouIntelligence, deleteHangzhouIntelligence } from './lib/20004-hangzhou-project'
+import { getHangzhouProjectDashboard, listHangzhouStudents, createHangzhouStudent, updateHangzhouStudent, deleteHangzhouStudent, listHangzhouChannels, createHangzhouChannel, updateHangzhouChannel, deleteHangzhouChannel, listHangzhouContent, createHangzhouContent, updateHangzhouContent, deleteHangzhouContent, listHangzhouIntelligence, createHangzhouIntelligence, updateHangzhouIntelligence, deleteHangzhouIntelligence, getHangzhouStudentPriorities, getHangzhouDailyBrief, listHangzhouSchools, createHangzhouSchool, deleteHangzhouSchool, listHangzhouCallReviews, createHangzhouCallReview, deleteHangzhouCallReview, listHangzhouContractChecks, createHangzhouContractCheck, deleteHangzhouContractCheck, listHangzhouCompetitors, createHangzhouCompetitor, deleteHangzhouCompetitor } from './lib/20004-hangzhou-project'
 import { refreshAgentIslandConfiguration, markAgentIslandSessionViewed } from './lib/agent-island-service'
 import { getAgentStatusHoverWindow } from './agent-status-hover-window'
 import { setDockBadgeCount } from './lib/dock-badge-service'
@@ -2232,6 +2232,21 @@ export function registerIpcHandlers(): void {
   ipcMain.handle(HANGZHOU_IPC_CHANNELS.CREATE_INTELLIGENCE, async (_, input: HangzhouIntelligenceInput) => createHangzhouIntelligence(input))
   ipcMain.handle(HANGZHOU_IPC_CHANNELS.UPDATE_INTELLIGENCE, async (_, id: string, updates: Partial<HangzhouIntelligenceInput>) => updateHangzhouIntelligence(id, updates))
   ipcMain.handle(HANGZHOU_IPC_CHANNELS.DELETE_INTELLIGENCE, async (_, id: string) => deleteHangzhouIntelligence(id))
+
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.GET_STUDENT_PRIORITIES, async () => getHangzhouStudentPriorities())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.GET_DAILY_BRIEF, async () => getHangzhouDailyBrief())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.LIST_SCHOOLS, async () => listHangzhouSchools())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.CREATE_SCHOOL, async (_, input: HangzhouSchoolInput) => createHangzhouSchool(input))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.DELETE_SCHOOL, async (_, id: string) => deleteHangzhouSchool(id))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.LIST_CALL_REVIEWS, async () => listHangzhouCallReviews())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.CREATE_CALL_REVIEW, async (_, input: HangzhouCallReviewInput) => createHangzhouCallReview(input))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.DELETE_CALL_REVIEW, async (_, id: string) => deleteHangzhouCallReview(id))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.LIST_CONTRACT_CHECKS, async () => listHangzhouContractChecks())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.CREATE_CONTRACT_CHECK, async (_, input: HangzhouContractCheckInput) => createHangzhouContractCheck(input))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.DELETE_CONTRACT_CHECK, async (_, id: string) => deleteHangzhouContractCheck(id))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.LIST_COMPETITORS, async () => listHangzhouCompetitors())
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.CREATE_COMPETITOR, async (_, input: HangzhouCompetitorInput) => createHangzhouCompetitor(input))
+  ipcMain.handle(HANGZHOU_IPC_CHANNELS.DELETE_COMPETITOR, async (_, id: string) => deleteHangzhouCompetitor(id))
 
   // ===== 应用设置相关 =====
 
