@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { ShieldCheck, Coins, Gauge, Wrench, Repeat2, BrainCircuit, Database } from 'lucide-react'
+import { ShieldCheck, Coins, Gauge, Wrench, Repeat2, BrainCircuit, Database, Route } from 'lucide-react'
+import type { Channel } from '@proma/shared'
 import { Button } from '@/components/ui/button'
 import { SettingsCard, SettingsSection } from './primitives'
 
@@ -11,6 +12,9 @@ interface CostGuardForm {
   repeatToolCallLimit: number
   compactionPercent: number
   maxToolResultChars: number
+  modelRouterEnabled: boolean
+  cheapModelId: string
+  strongModelId: string
 }
 
 const DEFAULT_FORM: CostGuardForm = {
@@ -21,6 +25,9 @@ const DEFAULT_FORM: CostGuardForm = {
   repeatToolCallLimit: 5,
   compactionPercent: 25,
   maxToolResultChars: 60000,
+  modelRouterEnabled: false,
+  cheapModelId: '',
+  strongModelId: '',
 }
 
 const PRESETS: Record<string, CostGuardForm> = {
@@ -32,6 +39,9 @@ const PRESETS: Record<string, CostGuardForm> = {
     repeatToolCallLimit: 4,
     compactionPercent: 18,
     maxToolResultChars: 40000,
+    modelRouterEnabled: false,
+    cheapModelId: '',
+    strongModelId: '',
   },
   '均衡模式': DEFAULT_FORM,
   '深度研究': {
@@ -42,6 +52,9 @@ const PRESETS: Record<string, CostGuardForm> = {
     repeatToolCallLimit: 8,
     compactionPercent: 35,
     maxToolResultChars: 100000,
+    modelRouterEnabled: false,
+    cheapModelId: '',
+    strongModelId: '',
   },
 }
 
@@ -82,8 +95,10 @@ function NumberField(props: {
 export function CostGuardSettings(): React.ReactElement {
   const [form, setForm] = React.useState<CostGuardForm>(DEFAULT_FORM)
   const [saved, setSaved] = React.useState(false)
+  const [channels, setChannels] = React.useState<Channel[]>([])
 
   React.useEffect(() => {
+    void window.electronAPI.listChannels().then(setChannels).catch(console.error)
     window.electronAPI.getSettings().then((settings) => {
       setForm({
         enabled: settings.costGuardEnabled ?? true,
@@ -93,6 +108,9 @@ export function CostGuardSettings(): React.ReactElement {
         repeatToolCallLimit: settings.agentRepeatToolCallLimit ?? DEFAULT_FORM.repeatToolCallLimit,
         compactionPercent: Math.round((settings.agentCompactionThresholdRatio ?? 0.25) * 100),
         maxToolResultChars: settings.agentMaxToolResultChars ?? DEFAULT_FORM.maxToolResultChars,
+        modelRouterEnabled: settings.agentModelRouterEnabled ?? false,
+        cheapModelId: settings.agentCheapModelId ?? '',
+        strongModelId: settings.agentStrongModelId ?? '',
       })
     }).catch(console.error)
   }, [])
@@ -116,6 +134,9 @@ export function CostGuardSettings(): React.ReactElement {
       agentRepeatToolCallLimit: normalized.repeatToolCallLimit,
       agentCompactionThresholdRatio: normalized.compactionPercent / 100,
       agentMaxToolResultChars: normalized.maxToolResultChars,
+      agentModelRouterEnabled: normalized.modelRouterEnabled,
+      agentCheapModelId: normalized.cheapModelId || undefined,
+      agentStrongModelId: normalized.strongModelId || undefined,
     })
     setSaved(true)
     window.setTimeout(() => setSaved(false), 1600)
@@ -222,6 +243,54 @@ export function CostGuardSettings(): React.ReactElement {
             suffix="%"
             onChange={(value) => setForm((prev) => ({ ...prev, compactionPercent: value }))}
           />
+        </SettingsCard>
+      </SettingsSection>
+
+
+      <SettingsSection
+        title="20004 Model Router"
+        description="同一渠道内自动分流：简单任务优先便宜模型，复杂研究/代码任务优先强模型。若当前渠道没有所选模型，会自动回退到你手动选择的模型。"
+      >
+        <SettingsCard>
+          <div className="flex items-center gap-4 border-b border-border/60 px-4 py-4">
+            <div className="text-muted-foreground"><Route size={18} /></div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-medium">自动模型分流</div>
+              <div className="mt-1 text-xs text-muted-foreground">仅在当前渠道内切换，不跨渠道改 API Key。</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setForm((prev) => ({ ...prev, modelRouterEnabled: !prev.modelRouterEnabled }))}
+              className={`h-7 w-12 rounded-full p-1 transition-colors ${form.modelRouterEnabled ? 'bg-primary' : 'bg-muted'}`}
+            >
+              <span className={`block h-5 w-5 rounded-full bg-white transition-transform ${form.modelRouterEnabled ? 'translate-x-5' : ''}`} />
+            </button>
+          </div>
+          {[
+            ['简单任务模型', 'cheapModelId' as const],
+            ['复杂任务模型', 'strongModelId' as const],
+          ].map(([label, key]) => (
+            <div key={key} className="flex items-center gap-4 border-b border-border/60 px-4 py-4 last:border-b-0">
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium">{label}</div>
+                <div className="mt-1 text-xs text-muted-foreground">按模型 ID 匹配当前渠道；留空表示不自动切换这一档。</div>
+              </div>
+              <select
+                value={form[key]}
+                onChange={(event) => setForm((prev) => ({ ...prev, [key]: event.target.value }))}
+                className="h-9 max-w-[360px] rounded-md border border-border bg-background px-3 text-sm"
+              >
+                <option value="">不自动切换</option>
+                {channels.flatMap((channel) =>
+                  channel.models.filter((model) => model.enabled !== false).map((model) => (
+                    <option key={`${channel.id}:${model.id}`} value={model.id}>
+                      {channel.name} · {model.name || model.id}
+                    </option>
+                  )),
+                )}
+              </select>
+            </div>
+          ))}
         </SettingsCard>
       </SettingsSection>
 
