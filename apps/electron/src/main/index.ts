@@ -3,6 +3,13 @@ import { join } from 'path'
 import { pathToFileURL } from 'url'
 import { existsSync } from 'fs'
 
+// 20004 Edition 在 Windows 正式版复用官方 Proma 的 Electron userData 路径。
+// 业务数据本来就共同使用 ~/.proma；共享 userData 还能让双方争用同一个 SingletonLock，
+// 避免官方 Proma 与 20004 Edition 同时运行并写同一套项目数据。
+if (app.isPackaged && process.platform === 'win32') {
+  app.setPath('userData', join(app.getPath('appData'), 'Proma'))
+}
+
 // Dev 与正式版使用独立的 userData 目录，避免共享 Chromium SingletonLock 导致 dev 启动被静默退出
 // 必须在任何会读取 userData 路径的模块加载之前执行
 if (!app.isPackaged) {
