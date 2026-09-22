@@ -180,6 +180,12 @@ import type {
   HangzhouProjectDashboard,
   HangzhouStudentInput,
   HangzhouStudentRecord,
+  HangzhouChannelInput,
+  HangzhouChannelRecord,
+  HangzhouContentInput,
+  HangzhouContentRecord,
+  HangzhouIntelligenceInput,
+  HangzhouIntelligenceRecord,
   QuickTaskSubmitInput,
   QuickTaskOpenSessionData,
   VoiceDictationAudioChunkInput,
@@ -459,6 +465,18 @@ export interface ElectronAPI {
   createHangzhouStudent: (input: HangzhouStudentInput) => Promise<HangzhouStudentRecord>
   updateHangzhouStudent: (id: string, updates: Partial<HangzhouStudentInput>) => Promise<HangzhouStudentRecord>
   deleteHangzhouStudent: (id: string) => Promise<void>
+  listHangzhouChannels: () => Promise<HangzhouChannelRecord[]>
+  createHangzhouChannel: (input: HangzhouChannelInput) => Promise<HangzhouChannelRecord>
+  updateHangzhouChannel: (id: string, updates: Partial<HangzhouChannelInput>) => Promise<HangzhouChannelRecord>
+  deleteHangzhouChannel: (id: string) => Promise<void>
+  listHangzhouContent: () => Promise<HangzhouContentRecord[]>
+  createHangzhouContent: (input: HangzhouContentInput) => Promise<HangzhouContentRecord>
+  updateHangzhouContent: (id: string, updates: Partial<HangzhouContentInput>) => Promise<HangzhouContentRecord>
+  deleteHangzhouContent: (id: string) => Promise<void>
+  listHangzhouIntelligence: () => Promise<HangzhouIntelligenceRecord[]>
+  createHangzhouIntelligence: (input: HangzhouIntelligenceInput) => Promise<HangzhouIntelligenceRecord>
+  updateHangzhouIntelligence: (id: string, updates: Partial<HangzhouIntelligenceInput>) => Promise<HangzhouIntelligenceRecord>
+  deleteHangzhouIntelligence: (id: string) => Promise<void>
 
   // ===== 应用设置相关 =====
 
@@ -1746,6 +1764,18 @@ const electronAPI: ElectronAPI = {
   createHangzhouStudent: (input: HangzhouStudentInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_STUDENT, input),
   updateHangzhouStudent: (id: string, updates: Partial<HangzhouStudentInput>) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.UPDATE_STUDENT, id, updates),
   deleteHangzhouStudent: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_STUDENT, id),
+  listHangzhouChannels: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.LIST_CHANNELS),
+  createHangzhouChannel: (input: HangzhouChannelInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_CHANNEL, input),
+  updateHangzhouChannel: (id: string, updates: Partial<HangzhouChannelInput>) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.UPDATE_CHANNEL, id, updates),
+  deleteHangzhouChannel: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_CHANNEL, id),
+  listHangzhouContent: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.LIST_CONTENT),
+  createHangzhouContent: (input: HangzhouContentInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_CONTENT, input),
+  updateHangzhouContent: (id: string, updates: Partial<HangzhouContentInput>) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.UPDATE_CONTENT, id, updates),
+  deleteHangzhouContent: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_CONTENT, id),
+  listHangzhouIntelligence: () => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.LIST_INTELLIGENCE),
+  createHangzhouIntelligence: (input: HangzhouIntelligenceInput) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.CREATE_INTELLIGENCE, input),
+  updateHangzhouIntelligence: (id: string, updates: Partial<HangzhouIntelligenceInput>) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.UPDATE_INTELLIGENCE, id, updates),
+  deleteHangzhouIntelligence: (id: string) => ipcRenderer.invoke(HANGZHOU_IPC_CHANNELS.DELETE_INTELLIGENCE, id),
 
   // 应用设置
   getSettings: () => {
