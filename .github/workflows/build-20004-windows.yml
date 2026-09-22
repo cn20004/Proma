@@ -5,6 +5,7 @@ on:
     branches:
       - costguard-v1
       - 20004-edition
+      - 20004-edition-v0.19.53
   workflow_dispatch:
 
 permissions:
