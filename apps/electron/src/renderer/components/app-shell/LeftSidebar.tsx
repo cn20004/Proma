@@ -11,7 +11,7 @@
 import * as React from 'react'
 import { useAtom, useSetAtom, useAtomValue, useStore } from 'jotai'
 import { toast } from 'sonner'
-import { Pin, PinOff, Star, Settings, Plus, CirclePlus, Trash2, Pencil, PanelLeft, PanelLeftOpen, ArrowRightLeft, Search, Archive, ArchiveRestore, ArrowLeft, Bot, MessageSquare, MoreHorizontal, FolderOpen, FolderInput, FolderPlus, Clock, CalendarDays, ChevronRight, ChevronDown, ChevronUp, ChevronsDownUp, Blocks, Brain, ListTodo, GitBranch, Download, Loader2, RotateCw, Info } from 'lucide-react'
+import { Pin, PinOff, Star, Settings, Plus, CirclePlus, Trash2, Pencil, PanelLeft, PanelLeftOpen, ArrowRightLeft, Search, Archive, ArchiveRestore, ArrowLeft, Bot, MessageSquare, MoreHorizontal, FolderOpen, FolderInput, FolderPlus, Clock, CalendarDays, ChevronRight, ChevronDown, ChevronUp, ChevronsDownUp, Blocks, Brain, ListTodo, GitBranch, Download, Loader2, RotateCw, Info, Building2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { ModeSwitcher } from './ModeSwitcher'
@@ -3490,6 +3490,18 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
           </TooltipTrigger>
           <TooltipContent side="bottom">搜索 ({getAcceleratorDisplay(getActiveAccelerator('global-search'))})</TooltipContent>
         </Tooltip>
+      </div>
+
+      <div className="px-3 pb-0.5 pt-2">
+        <WorkspaceComponentSidebarEntry
+          label="杭州项目"
+          icon={<Building2 size={16} />}
+          active={activeView === 'hangzhou'}
+          onClick={() => {
+            setAutomationForm({ open: false, draft: null })
+            setActiveView('hangzhou')
+          }}
+        />
       </div>
 
       {/* 项目级组件：每一行直接打开对应的右侧工作区 Tab。 */}
