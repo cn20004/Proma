@@ -27,7 +27,7 @@ import { VersionHistory } from './VersionHistory'
 declare const __APP_VERSION__: string
 const APP_VERSION = __APP_VERSION__
 
-const GITHUB_RELEASES_URL = 'https://github.com/proma-ai/Proma/releases'
+const GITHUB_RELEASES_URL = 'https://github.com/cn20004/Proma/releases'
 
 /** 更新状态卡片 */
 function UpdateCard(): React.ReactElement | null {
@@ -482,7 +482,7 @@ export function AboutSettings(): React.ReactElement {
   return (
     <SettingsSection
       title="关于 Proma"
-      description="集成通用 AI Agent 的下一代人工智能软件"
+      description="20004 魔改版 · 基于 Proma 社区版最新稳定版本深度定制"
     >
       <SettingsCard>
         <SettingsRow label="版本">
@@ -490,6 +490,12 @@ export function AboutSettings(): React.ReactElement {
         </SettingsRow>
         <SettingsRow label="运行时">
           <span className="text-sm text-muted-foreground">Electron + React</span>
+        </SettingsRow>
+        <SettingsRow label="定制版本">
+          <span className="text-sm font-medium text-primary">20004 Edition · CostGuard</span>
+        </SettingsRow>
+        <SettingsRow label="魔改人">
+          <span className="text-sm text-muted-foreground font-mono">20004</span>
         </SettingsRow>
         <SettingsRow
           label="开源协议"
@@ -506,12 +512,12 @@ export function AboutSettings(): React.ReactElement {
         </SettingsRow>
         <SettingsRow label="项目地址">
           <a
-            href="https://github.com/proma-ai/Proma.git"
+            href="https://github.com/cn20004/Proma"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-primary hover:underline"
           >
-            github.com/proma-ai/Proma
+            github.com/cn20004/Proma
           </a>
         </SettingsRow>
       </SettingsCard>
