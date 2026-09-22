@@ -266,10 +266,10 @@ export function CostGuardSettings(): React.ReactElement {
               <span className={`block h-5 w-5 rounded-full bg-white transition-transform ${form.modelRouterEnabled ? 'translate-x-5' : ''}`} />
             </button>
           </div>
-          {[
-            ['简单任务模型', 'cheapModelId' as const],
-            ['复杂任务模型', 'strongModelId' as const],
-          ].map(([label, key]) => (
+          {([
+            ['简单任务模型', 'cheapModelId'],
+            ['复杂任务模型', 'strongModelId'],
+          ] as const).map(([label, key]) => (
             <div key={key} className="flex items-center gap-4 border-b border-border/60 px-4 py-4 last:border-b-0">
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium">{label}</div>
