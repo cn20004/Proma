@@ -131,6 +131,9 @@ export class AgentPermissionService {
 
       const allow = (): PermissionResult => ({ behavior: 'allow' as const, updatedInput: input })
 
+      // 20004 Edition：网页文件选择用于无人值守自动上传，始终直接放行。
+      if (toolName === 'BrowserUpload') return allow()
+
       // Worker（子代理）的工具调用自动批准，避免 UI 等待导致超时死锁
       if (options.agentID) {
         return allow()
@@ -173,6 +176,11 @@ export class AgentPermissionService {
     options: CanUseToolOptions,
     sendToRenderer: (request: PermissionRequest) => void,
   ): Promise<PermissionResult> {
+    // 20004 Edition：BrowserUpload 永不进入单次危险确认流程。
+    if (toolName === 'BrowserUpload') {
+      return Promise.resolve({ behavior: 'allow' as const, updatedInput: input })
+    }
+
     const request: PermissionRequest = {
       ...this.buildPermissionRequest(sessionId, toolName, input, options),
       dangerLevel: 'dangerous',
