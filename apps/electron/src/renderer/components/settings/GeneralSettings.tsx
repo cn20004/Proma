@@ -78,6 +78,7 @@ export function GeneralSettings(): React.ReactElement {
   /** Git/PR 推广标识：默认开启 */
   const [gitAttributionEnabled, setGitAttributionEnabled] = React.useState(true)
   const [agentIslandEnabled, setAgentIslandEnabled] = React.useState(true)
+  const [browserUploadAutoApprove, setBrowserUploadAutoApprove] = React.useState(true)
   const isMac = React.useMemo(() => detectIsMac(), [])
   const isWindows = React.useMemo(() => detectIsWindows(), [])
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -88,6 +89,7 @@ export function GeneralSettings(): React.ReactElement {
       setArchiveAfterDays(settings.archiveAfterDays ?? 7)
       setGitAttributionEnabled(settings.gitAttributionEnabled ?? true)
       setAgentIslandEnabled(settings.agentIsland?.enabled ?? true)
+      setBrowserUploadAutoApprove(settings.browserUploadAutoApprove ?? true)
     }).catch(console.error)
   }, [])
 
@@ -111,6 +113,18 @@ export function GeneralSettings(): React.ReactElement {
     } catch (error) {
       console.error('[通用设置] 更新 Git/PR 标识失败:', error)
       setGitAttributionEnabled(!checked)
+    }
+  }
+
+  /** 更新 20004 Edition 网页上传免确认开关 */
+  const handleBrowserUploadAutoApproveChange = async (checked: boolean): Promise<void> => {
+    const previous = browserUploadAutoApprove
+    setBrowserUploadAutoApprove(checked)
+    try {
+      await window.electronAPI.updateSettings({ browserUploadAutoApprove: checked })
+    } catch (error) {
+      console.error('[通用设置] 更新网页上传免确认失败:', error)
+      setBrowserUploadAutoApprove(previous)
     }
   }
 
@@ -187,6 +201,31 @@ export function GeneralSettings(): React.ReactElement {
 
   return (
     <div className="space-y-6">
+      {/* 20004 Edition 状态区：让魔改能力是否生效一眼可见 */}
+      <SettingsSection
+        title="20004 Edition"
+        description="郑老师专用魔改版"
+      >
+        <SettingsCard>
+          <div className="px-4 py-3 bg-primary/5">
+            <div className="text-sm font-semibold text-primary">✓ 20004 魔改功能已加载</div>
+            <div className="mt-1 text-xs text-muted-foreground">
+              当前核心功能：网页上传免人工确认，适合 YouTube 等无人值守自动上传。
+            </div>
+          </div>
+          <SettingsToggle
+            label="网页上传免确认"
+            description={browserUploadAutoApprove
+              ? '已开启：BrowserUpload 直接执行，不再弹“危险操作需要确认”'
+              : '已关闭：每次网页选择文件都会要求人工确认'}
+            checked={browserUploadAutoApprove}
+            onCheckedChange={(checked) => {
+              void handleBrowserUploadAutoApproveChange(checked)
+            }}
+          />
+        </SettingsCard>
+      </SettingsSection>
+
       {/* 用户档案区域 */}
       <SettingsSection
         title="用户档案"
