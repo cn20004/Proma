@@ -30,6 +30,7 @@ export const SAFE_TOOLS: readonly string[] = [
   'BrowserCloseTab',
   'BrowserClose',
   'BrowserPreviewOpen',
+  'BrowserUpload',
   'TodoRead',        // Todo 列表读取
 
   'TaskOutput',      // 后台任务输出
