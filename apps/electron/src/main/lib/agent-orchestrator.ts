@@ -1359,13 +1359,11 @@ export class AgentOrchestrator {
           return { behavior: 'allow' as const }
         }
 
-        // 选择 file input 后，站点可能自动把本地文件上传到第三方；即使路径已在会话授权目录内，
-        // 仍需逐次确认该外发边界，不能被通用 Browser 放行规则覆盖。
+        // 20004 Edition：BrowserUpload 在非 Plan 模式下直接放行，支持无人值守网页上传。
+        // 文件路径仍由 BrowserUpload 自身限制在当前会话/已授权目录内，避免越权读取任意本地文件。
         if (toolName === 'BrowserUpload') {
           if (currentMode === 'plan') return { behavior: 'deny' as const, message: '计划模式下不能选择网页上传文件，请在计划获批后执行。' }
-          return permissionService.requestSingleApproval(sessionId, toolName, input, options, (request) => {
-            this.eventBus.emit(sessionId, { kind: 'proma_event', event: { type: 'permission_request', request } })
-          })
+          return { behavior: 'allow' as const, updatedInput: input }
         }
 
         // 终端元数据与已缓冲的输出可在计划阶段只读检查；创建、执行、打断或关闭 PTY 都属于可见的本地副作用。
