@@ -33,6 +33,10 @@ const GITHUB_RELEASES_URL = 'https://github.com/proma-ai/Proma/releases'
 /** 更新状态卡片 */
 function UpdateCard(): React.ReactElement | null {
   const available = useAtomValue(updaterAvailableAtom)
+  const status = useAtomValue(updateStatusAtom)
+  const [checking, setChecking] = React.useState(false)
+  const [showReleaseNotes, setShowReleaseNotes] = React.useState(false)
+  const [release, setRelease] = React.useState<import('@proma/shared').GitHubRelease | null>(null)
 
   if (IS_20004_EDITION) {
     return (
@@ -49,10 +53,6 @@ function UpdateCard(): React.ReactElement | null {
       </SettingsCard>
     )
   }
-  const status = useAtomValue(updateStatusAtom)
-  const [checking, setChecking] = React.useState(false)
-  const [showReleaseNotes, setShowReleaseNotes] = React.useState(false)
-  const [release, setRelease] = React.useState<import('@proma/shared').GitHubRelease | null>(null)
 
   // updater 不可用时不渲染
   if (!available) return null
