@@ -13,6 +13,11 @@ import { UPDATER_IPC_CHANNELS } from './updater-types'
 import { createIdleInstallScheduler } from './idle-install-scheduler'
 import { isNewerVersion } from './version'
 import { createUpdateCacheCleanup, getDefaultUpdaterBaseCacheDirectory, shouldDeferUpdateCacheCleanup } from './update-cache-cleanup'
+import pkg from '../../../../package.json' with { type: 'json' }
+
+const IS_20004_EDITION = (pkg as { proma?: { edition?: string; disableOfficialAutoUpdate?: boolean } }).proma?.edition === '20004'
+const OFFICIAL_AUTO_UPDATE_DISABLED = IS_20004_EDITION
+  && (pkg as { proma?: { disableOfficialAutoUpdate?: boolean } }).proma?.disableOfficialAutoUpdate !== false
 
 /** 当前更新状态 */
 let currentStatus: UpdateStatus = { status: 'idle' }
@@ -108,6 +113,12 @@ export function getUpdateStatus(): UpdateStatus {
 
 /** 手动触发检查更新 */
 export async function checkForUpdates(): Promise<void> {
+  if (OFFICIAL_AUTO_UPDATE_DISABLED) {
+    console.log('[20004 Edition] 已禁用官方自动更新，防止覆盖魔改功能')
+    setStatus({ status: 'not-available' })
+    return
+  }
+
   // 下载未完成时不能启动第二次下载；已下载版本仍需检查，以便追赶随后发布的新版。
   if (currentStatus.status === 'downloading') {
     console.log('[更新] 跳过检查：正在下载更新')
@@ -142,6 +153,10 @@ export async function checkForUpdates(): Promise<void> {
  * @returns 是否已接受请求；仅 downloaded 状态可排队。
  */
 export function installWhenIdle(): boolean {
+  if (OFFICIAL_AUTO_UPDATE_DISABLED) {
+    console.log('[20004 Edition] 拒绝安装官方自动更新包，防止覆盖魔改功能')
+    return false
+  }
   if (currentStatus.status !== 'downloaded') {
     console.warn('[更新] 跳过空闲安装：当前没有已下载的更新')
     return false
@@ -217,6 +232,13 @@ export function cleanupUpdater(): void {
  * @param mainWindow - 主窗口实例，用于推送更新状态
  */
 export function initAutoUpdater(mainWindow: BrowserWindow): void {
+  if (OFFICIAL_AUTO_UPDATE_DISABLED) {
+    configureUpdater(mainWindow)
+    console.log('[20004 Edition] 官方自动更新已永久禁用；由 20004 合并流程跟进上游版本')
+    setStatus({ status: 'not-available' })
+    return
+  }
+
   configureUpdater(mainWindow)
 
   const updateCacheCleanup = createUpdateCacheCleanup({
