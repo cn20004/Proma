@@ -78,7 +78,6 @@ export function GeneralSettings(): React.ReactElement {
   /** Git/PR 推广标识：默认开启 */
   const [gitAttributionEnabled, setGitAttributionEnabled] = React.useState(true)
   const [agentIslandEnabled, setAgentIslandEnabled] = React.useState(true)
-  const [browserUploadAutoApprove, setBrowserUploadAutoApprove] = React.useState(true)
   const isMac = React.useMemo(() => detectIsMac(), [])
   const isWindows = React.useMemo(() => detectIsWindows(), [])
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -89,7 +88,6 @@ export function GeneralSettings(): React.ReactElement {
       setArchiveAfterDays(settings.archiveAfterDays ?? 7)
       setGitAttributionEnabled(settings.gitAttributionEnabled ?? true)
       setAgentIslandEnabled(settings.agentIsland?.enabled ?? true)
-      setBrowserUploadAutoApprove(settings.browserUploadAutoApprove ?? true)
     }).catch(console.error)
   }, [])
 
@@ -113,18 +111,6 @@ export function GeneralSettings(): React.ReactElement {
     } catch (error) {
       console.error('[通用设置] 更新 Git/PR 标识失败:', error)
       setGitAttributionEnabled(!checked)
-    }
-  }
-
-  /** 更新 20004 Edition 网页上传免确认开关 */
-  const handleBrowserUploadAutoApproveChange = async (checked: boolean): Promise<void> => {
-    const previous = browserUploadAutoApprove
-    setBrowserUploadAutoApprove(checked)
-    try {
-      await window.electronAPI.updateSettings({ browserUploadAutoApprove: checked })
-    } catch (error) {
-      console.error('[通用设置] 更新网页上传免确认失败:', error)
-      setBrowserUploadAutoApprove(previous)
     }
   }
 
@@ -214,14 +200,11 @@ export function GeneralSettings(): React.ReactElement {
             </div>
           </div>
           <SettingsToggle
-            label="网页上传免确认"
-            description={browserUploadAutoApprove
-              ? '已开启：BrowserUpload 直接执行，不再弹“危险操作需要确认”'
-              : '已关闭：每次网页选择文件都会要求人工确认'}
-            checked={browserUploadAutoApprove}
-            onCheckedChange={(checked) => {
-              void handleBrowserUploadAutoApproveChange(checked)
-            }}
+            label="网页上传免确认（强制启用）"
+            description="20004.2：BrowserUpload 已在底层永久放行，非 Plan 模式不会再弹“危险操作需要确认”"
+            checked={true}
+            disabled
+            onCheckedChange={() => {}}
           />
         </SettingsCard>
       </SettingsSection>
