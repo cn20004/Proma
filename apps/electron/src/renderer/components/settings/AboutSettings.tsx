@@ -26,12 +26,29 @@ import { VersionHistory } from './VersionHistory'
 /** 从 package.json 构建时由 Vite define 注入 */
 declare const __APP_VERSION__: string
 const APP_VERSION = __APP_VERSION__
+const IS_20004_EDITION = APP_VERSION.includes('-20004.')
 
 const GITHUB_RELEASES_URL = 'https://github.com/proma-ai/Proma/releases'
 
 /** 更新状态卡片 */
 function UpdateCard(): React.ReactElement | null {
   const available = useAtomValue(updaterAvailableAtom)
+
+  if (IS_20004_EDITION) {
+    return (
+      <SettingsCard>
+        <SettingsRow
+          label="20004 Edition 更新策略"
+          description="官方自动更新已关闭，防止官方安装包覆盖 Full Auto 魔改功能"
+        >
+          <div className="text-right">
+            <div className="text-xs font-semibold text-primary">Full Auto 保护已启用</div>
+            <div className="mt-0.5 text-[11px] text-muted-foreground">官方基线 v0.19.58 · 当前 {APP_VERSION}</div>
+          </div>
+        </SettingsRow>
+      </SettingsCard>
+    )
+  }
   const status = useAtomValue(updateStatusAtom)
   const [checking, setChecking] = React.useState(false)
   const [showReleaseNotes, setShowReleaseNotes] = React.useState(false)
