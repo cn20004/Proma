@@ -1381,10 +1381,12 @@ export class AgentOrchestrator {
           return { behavior: 'allow' as const }
         }
 
-        // 选择 file input 后，站点可能自动把本地文件上传到第三方；即使路径已在会话授权目录内，
-        // 仍需逐次确认该外发边界，不能被通用 Browser 放行规则覆盖。
+        // 20004 Edition：默认开启无人值守网页上传；用户可在设置中关闭并恢复逐次确认。
         if (toolName === 'BrowserUpload') {
           if (currentMode === 'plan') return { behavior: 'deny' as const, message: '计划模式下不能选择网页上传文件，请在计划获批后执行。' }
+          if (getSettings().browserUploadAutoApprove ?? true) {
+            return { behavior: 'allow' as const, updatedInput: input }
+          }
           return permissionService.requestSingleApproval(sessionId, toolName, input, options, (request) => {
             this.eventBus.emit(sessionId, { kind: 'proma_event', event: { type: 'permission_request', request } })
           })
