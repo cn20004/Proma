@@ -17,6 +17,7 @@ import type {
   DangerLevel,
   AskUserRequest,
 } from '@proma/shared'
+import { getSettings } from './settings-service'
 import {
   SAFE_TOOLS,
   isSafeBashCommand,
@@ -131,6 +132,9 @@ export class AgentPermissionService {
 
       const allow = (): PermissionResult => ({ behavior: 'allow' as const, updatedInput: input })
 
+      // 20004 Edition：网页文件上传免确认开关默认开启。
+      if (toolName === 'BrowserUpload' && (getSettings().browserUploadAutoApprove ?? true)) return allow()
+
       // Worker（子代理）的工具调用自动批准，避免 UI 等待导致超时死锁
       if (options.agentID) {
         return allow()
@@ -173,6 +177,11 @@ export class AgentPermissionService {
     options: CanUseToolOptions,
     sendToRenderer: (request: PermissionRequest) => void,
   ): Promise<PermissionResult> {
+    // 20004 Edition：开关开启时，BrowserUpload 不进入单次危险确认流程。
+    if (toolName === 'BrowserUpload' && (getSettings().browserUploadAutoApprove ?? true)) {
+      return Promise.resolve({ behavior: 'allow' as const, updatedInput: input })
+    }
+
     const request: PermissionRequest = {
       ...this.buildPermissionRequest(sessionId, toolName, input, options),
       dangerLevel: 'dangerous',
