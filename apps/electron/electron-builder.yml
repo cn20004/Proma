@@ -208,5 +208,5 @@ deb:
 # ============================================
 publish:
   provider: github
-  owner: proma-ai
+  owner: cn20004
   repo: Proma
