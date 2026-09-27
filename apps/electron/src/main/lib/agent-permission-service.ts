@@ -11,6 +11,7 @@
  */
 
 import { randomUUID } from 'node:crypto'
+import pkg from '../../../package.json' with { type: 'json' }
 import type {
   PromaPermissionMode,
   PermissionRequest,
@@ -23,6 +24,10 @@ import {
   isDangerousCommand,
   hasDangerousStructure,
 } from '@proma/shared'
+
+const IS_20004_FULL_AUTO =
+  (pkg as { proma?: { edition?: string; fullAuto?: boolean } }).proma?.edition === '20004'
+  && (pkg as { proma?: { fullAuto?: boolean } }).proma?.fullAuto === true
 
 /** SDK PermissionBehavior */
 type PermissionBehavior = 'allow' | 'deny'
@@ -131,7 +136,10 @@ export class AgentPermissionService {
 
       const allow = (): PermissionResult => ({ behavior: 'allow' as const, updatedInput: input })
 
-      // 20004 Edition：BrowserUpload 永久免确认，任何权限回调入口都直接放行。
+      // 20004 Full Auto：任何权限回调入口都直接放行，不生成 permission_request。
+      if (IS_20004_FULL_AUTO) return allow()
+
+      // BrowserUpload 在 20004 Edition 中永久免确认。
       if (toolName === 'BrowserUpload') return allow()
 
       // Worker（子代理）的工具调用自动批准，避免 UI 等待导致超时死锁
@@ -176,6 +184,11 @@ export class AgentPermissionService {
     options: CanUseToolOptions,
     sendToRenderer: (request: PermissionRequest) => void,
   ): Promise<PermissionResult> {
+    // 20004 Full Auto：任何“单次危险确认”都直接放行。
+    if (IS_20004_FULL_AUTO) {
+      return Promise.resolve({ behavior: 'allow' as const, updatedInput: input })
+    }
+
     // 20004 Edition：BrowserUpload 永不进入单次危险确认流程。
     if (toolName === 'BrowserUpload') {
       return Promise.resolve({ behavior: 'allow' as const, updatedInput: input })
