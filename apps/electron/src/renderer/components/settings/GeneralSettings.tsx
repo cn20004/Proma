@@ -190,18 +190,18 @@ export function GeneralSettings(): React.ReactElement {
       {/* 20004 Edition 状态区 */}
       <SettingsSection
         title="20004 Edition"
-        description="郑老师专用魔改版 · 基于官方 v0.19.58"
+        description="郑老师专用魔改版 · Full Auto · 基于官方 v0.19.58"
       >
         <SettingsCard>
           <div className="px-4 py-3 bg-primary/5">
             <div className="text-sm font-semibold text-primary">✓ 20004 魔改功能已加载</div>
             <div className="mt-1 text-xs text-muted-foreground">
-              当前基线：官方 Proma v0.19.58；网页上传免人工确认功能已集成。
+              当前基线：官方 Proma v0.19.58；Full Auto 已启用；官方自动覆盖已关闭。
             </div>
           </div>
           <SettingsToggle
-            label="网页上传免确认（强制启用）"
-            description="20004.2：BrowserUpload 已在底层永久放行，非 Plan 模式不会再弹“危险操作需要确认”"
+            label="20004 Full Auto（强制启用）"
+            description="非 Plan 模式下所有工具权限直接放行；BrowserUpload 不再弹“危险操作需要确认”"
             checked={true}
             disabled
             onCheckedChange={() => {}}
