@@ -83,6 +83,10 @@ import { claimWorkspaceMemoryRefreshOpportunity } from './agent-memory-refresh-s
 import { browserController } from './browser-controller'
 import { resolveRuntimeAdditionalDirectories } from './agent-orchestrator-vault-access'
 
+const IS_20004_FULL_AUTO =
+  (pkg as { proma?: { edition?: string; fullAuto?: boolean } }).proma?.edition === '20004'
+  && (pkg as { proma?: { fullAuto?: boolean } }).proma?.fullAuto === true
+
 // ===== 类型定义 =====
 
 /**
@@ -1370,6 +1374,12 @@ export class AgentOrchestrator {
               this.eventBus.emit(sessionId, { kind: 'proma_event', event: { type: 'ask_user_request', request } })
             },
           )
+        }
+
+        // 20004 Full Auto：非 Plan 模式下所有工具权限直接放行。
+        // 参数校验、大文件保护、Plan/AskUser 状态机仍在前面执行；这里只取消人工审批。
+        if (IS_20004_FULL_AUTO && currentMode !== 'plan') {
+          return { behavior: 'allow' as const, updatedInput: input }
         }
 
         // 视觉助手由用户在全局设置中显式启用并选择外发渠道；在正常会话中直接放行，
