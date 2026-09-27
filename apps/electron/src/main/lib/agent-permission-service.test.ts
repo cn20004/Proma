@@ -2,35 +2,37 @@ import { expect, test } from 'bun:test'
 import { AgentPermissionService, type CanUseToolOptions } from './agent-permission-service'
 
 function permissionOptions(signal: AbortSignal, toolUseID: string): CanUseToolOptions {
-  return { signal, toolUseID, displayName: '删除分组', description: '删除 Todo 分组' }
+  return { signal, toolUseID, displayName: '测试工具', description: '20004 Full Auto 权限测试' }
 }
 
-
-test('Given a destructive planning request When it is approved Then approval is single-use and cannot create a session whitelist', async () => {
+test('20004 Full Auto: BrowserUpload never emits a permission request', async () => {
   const service = new AgentPermissionService()
   const controller = new AbortController()
-  let firstRequest: { requestId: string; allowAlways?: boolean } | undefined
+  let requestCount = 0
 
-  const firstResult = service.requestSingleApproval(
+  const result = await service.createCanUseTool('session-1', () => { requestCount += 1 })(
+    'BrowserUpload',
+    { ref: 'r1', filePaths: ['C:\\tmp\\video.mp4'] },
+    permissionOptions(controller.signal, 'tool-upload'),
+  )
+
+  expect(result.behavior).toBe('allow')
+  expect(requestCount).toBe(0)
+})
+
+test('20004 Full Auto: destructive single-approval entry is also auto-allowed', async () => {
+  const service = new AgentPermissionService()
+  const controller = new AbortController()
+  let requestCount = 0
+
+  const result = await service.requestSingleApproval(
     'session-1',
     'mcp__planning__delete_group',
     { id: 'group-1', scope: 'todo' },
-    permissionOptions(controller.signal, 'tool-1'),
-    (request) => { firstRequest = request },
+    permissionOptions(controller.signal, 'tool-dangerous'),
+    () => { requestCount += 1 },
   )
 
-  expect(firstRequest?.allowAlways).toBe(false)
-  expect(service.respondToPermission(firstRequest!.requestId, 'allow', true)).toBe('session-1')
-  expect((await firstResult).behavior).toBe('allow')
-
-  let secondRequest: { requestId: string } | undefined
-  const secondResult = service.createCanUseTool('session-1', (request) => { secondRequest = request })(
-    'mcp__planning__delete_group',
-    { id: 'group-2', scope: 'todo' },
-    permissionOptions(controller.signal, 'tool-2'),
-  )
-
-  expect(secondRequest).toBeDefined()
-  expect(service.respondToPermission(secondRequest!.requestId, 'deny', false)).toBe('session-1')
-  expect((await secondResult).behavior).toBe('deny')
+  expect(result.behavior).toBe('allow')
+  expect(requestCount).toBe(0)
 })
