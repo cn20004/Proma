@@ -2911,3 +2911,176 @@
 .vault-ink-mde .vault-mermaid-block .mermaid-block-wrapper {
   margin: 0;
 }
+
+
+/* ==========================================================================
+ * 20004 Retro UI Pack
+ * 两个可切换的完整复古界面：
+ * 1) Windows 95：灰色窗口、海蓝桌面、直角控件、经典 3D bevel。
+ * 2) Classic Linux Installer：早期 Debian/Red Hat/text-mode installer 蓝底白字。
+ * ========================================================================== */
+
+/* Windows 95 */
+.theme-win95-light {
+  font-family: Tahoma, "MS Sans Serif", "Microsoft Sans Serif", "Segoe UI", sans-serif;
+  font-feature-settings: normal;
+  -webkit-font-smoothing: none;
+  --radius: 0rem;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+
+  --background: 0 0% 75.3%;              /* #c0c0c0 */
+  --foreground: 0 0% 0%;
+  --sidebar-primary-foreground: 0 0% 0%;
+  --content-area: 0 0% 75.3%;
+  --sidebar-surface: 180 100% 25.1%;      /* classic #008080 desktop */
+  --tabbar-surface: 0 0% 75.3%;
+  --tab-surface: 0 0% 75.3%;
+  --tab-indicator: 240 100% 25.1%;       /* #000080 */
+  --muted: 0 0% 84%;
+  --muted-foreground: 0 0% 24%;
+  --border: 0 0% 50.2%;                  /* #808080 */
+  --input: 0 0% 100%;
+  --input-surface: 0 0% 100%;
+  --ring: 240 100% 25.1%;
+  --primary: 240 100% 25.1%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 75.3%;
+  --secondary-foreground: 0 0% 0%;
+  --accent: 240 100% 25.1%;
+  --accent-foreground: 0 0% 100%;
+  --card: 0 0% 75.3%;
+  --card-foreground: 0 0% 0%;
+  --popover: 0 0% 75.3%;
+  --popover-foreground: 0 0% 0%;
+  --dialog: 0 0% 75.3%;
+  --dialog-foreground: 0 0% 0%;
+  --sidebar-control-surface: 0 0% 75.3%;
+  --sidebar-control-surface-hover: 0 0% 82%;
+  --sidebar-control-stroke: 0 0% 0% / 0.55;
+  --tooltip: 60 100% 90%;
+  --tooltip-foreground: 0 0% 0%;
+  --tooltip-muted: 0 0% 20%;
+  --code-bg: 0 0% 0%;
+  --dashed-border: 0 0% 0% / 0.75;
+  --dashed-border-hover: 240 100% 25.1%;
+  --shadow-xs: 1px 1px 0 #000;
+  --shadow-sm: inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+  --shadow-md: inset 2px 2px 0 #fff, inset -2px -2px 0 #404040, 1px 1px 0 #000;
+  --shadow-lg: inset 2px 2px 0 #fff, inset -2px -2px 0 #404040, 2px 2px 0 #000;
+  --shadow-xl: inset 2px 2px 0 #fff, inset -2px -2px 0 #404040, 3px 3px 0 #000;
+}
+
+.theme-win95-light ::selection,
+.theme-win95-light ::-moz-selection {
+  background: #000080;
+  color: #fff;
+}
+
+.theme-win95-light button,
+.theme-win95-light input,
+.theme-win95-light textarea,
+.theme-win95-light select,
+.theme-win95-light [role="button"] {
+  border-radius: 0 !important;
+}
+
+.theme-win95-light button:not([data-no-retro-bevel]),
+.theme-win95-light [role="button"]:not([data-no-retro-bevel]) {
+  box-shadow: inset 1px 1px 0 rgba(255,255,255,.95), inset -1px -1px 0 rgba(64,64,64,.9);
+}
+
+.theme-win95-light button:active:not([data-no-retro-bevel]),
+.theme-win95-light [role="button"]:active:not([data-no-retro-bevel]) {
+  box-shadow: inset 1px 1px 0 rgba(64,64,64,.9), inset -1px -1px 0 rgba(255,255,255,.95);
+}
+
+.theme-win95-light input,
+.theme-win95-light textarea,
+.theme-win95-light select {
+  box-shadow: inset 1px 1px 0 #404040, inset -1px -1px 0 #fff;
+}
+
+.theme-win95-light .rounded-full {
+  border-radius: 0 !important;
+}
+
+/* Classic Linux / DOS-like text installer */
+.theme-linux-installer-dark {
+  font-family: "Cascadia Mono", "IBM Plex Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+  font-feature-settings: normal;
+  -webkit-font-smoothing: none;
+  --radius: 0rem;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+
+  --background: 240 100% 33.3%;           /* #0000aa */
+  --foreground: 0 0% 100%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --content-area: 240 100% 33.3%;
+  --sidebar-surface: 240 100% 27%;
+  --tabbar-surface: 240 100% 27%;
+  --tab-surface: 240 100% 33.3%;
+  --tab-indicator: 180 100% 33.3%;        /* #00aaaa */
+  --muted: 240 100% 27%;
+  --muted-foreground: 0 0% 82%;
+  --border: 0 0% 100%;
+  --input: 240 100% 33.3%;
+  --input-surface: 240 100% 33.3%;
+  --ring: 180 100% 33.3%;
+  --primary: 180 100% 33.3%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 75.3%;                /* installer button gray */
+  --secondary-foreground: 0 0% 0%;
+  --accent: 180 100% 33.3%;
+  --accent-foreground: 0 0% 0%;
+  --card: 240 100% 33.3%;
+  --card-foreground: 0 0% 100%;
+  --popover: 240 100% 27%;
+  --popover-foreground: 0 0% 100%;
+  --dialog: 240 100% 33.3%;
+  --dialog-foreground: 0 0% 100%;
+  --sidebar-control-surface: 240 100% 33.3%;
+  --sidebar-control-surface-hover: 180 100% 33.3%;
+  --sidebar-control-stroke: 0 0% 100% / 1;
+  --tooltip: 0 0% 75.3%;
+  --tooltip-foreground: 0 0% 0%;
+  --tooltip-muted: 0 0% 18%;
+  --code-bg: 240 100% 20%;
+  --dashed-border: 0 0% 100% / 1;
+  --dashed-border-hover: 180 100% 33.3%;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+}
+
+.theme-linux-installer-dark ::selection,
+.theme-linux-installer-dark ::-moz-selection {
+  background: #00aaaa;
+  color: #000;
+}
+
+.theme-linux-installer-dark button,
+.theme-linux-installer-dark input,
+.theme-linux-installer-dark textarea,
+.theme-linux-installer-dark select,
+.theme-linux-installer-dark [role="button"] {
+  border-radius: 0 !important;
+}
+
+.theme-linux-installer-dark button,
+.theme-linux-installer-dark [role="button"] {
+  border-color: #fff !important;
+}
+
+.theme-linux-installer-dark .rounded-full {
+  border-radius: 0 !important;
+}
+
+.theme-linux-installer-dark * {
+  text-shadow: none !important;
+}
