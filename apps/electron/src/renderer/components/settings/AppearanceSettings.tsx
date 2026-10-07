@@ -54,6 +54,8 @@ import themeOceanDark from '@/assets/theme-previews/theme-ocean-dark.webp'
 import themeForestNight from '@/assets/theme-previews/theme-forest-night.webp'
 import themeMorandiNight from '@/assets/theme-previews/theme-morandi-night.webp'
 import themeTerminalDark from '@/assets/theme-previews/theme-terminal-dark.png'
+import themeWin95 from '@/assets/theme-previews/theme-win95.svg'
+import themeLinuxInstaller from '@/assets/theme-previews/theme-linux-installer.svg'
 
 /** 主题选项 */
 const THEME_OPTIONS = [
@@ -135,6 +137,20 @@ const SPECIAL_STYLES: readonly SpecialStyle[] = [
     variant: 'dark',
     image: themeTerminalDark,
     tooltip: '该主题包含轻微闪烁动画',
+  },
+  {
+    id: 'win95-light',
+    name: 'Windows 95',
+    variant: 'light',
+    image: themeWin95,
+    tooltip: '经典灰色窗口、海蓝桌面、直角控件与立体边框',
+  },
+  {
+    id: 'linux-installer-dark',
+    name: 'Linux 安装器',
+    variant: 'dark',
+    image: themeLinuxInstaller,
+    tooltip: '复刻早期文本模式安装程序的蓝底白字界面',
   },
 ]
 
@@ -224,7 +240,7 @@ export function AppearanceSettings(): React.ReactElement {
           {/* 特殊风格 - 标签在上，卡片在下 */}
           <div className="px-4 py-3 space-y-2">
             <div className="text-sm font-medium text-foreground">特殊风格</div>
-            <div className="grid grid-cols-7 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 gap-3">
               {SPECIAL_STYLES.map((style) => (
                 <StyleCard
                   key={style.id}
