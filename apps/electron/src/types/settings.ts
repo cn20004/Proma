@@ -234,6 +234,8 @@ export const THEME_STYLES = [
   'slate-light',
   'slate-dark',
   'terminal-dark',
+  'win95-light',
+  'linux-installer-dark',
 ] as const
 
 /** 特殊风格主题 */
