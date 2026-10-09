@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Test update publication
+        run: bun test apps/electron/scripts/verify-windows-release.test.ts apps/electron/scripts/github-update-channel.test.ts
+
       - name: Typecheck
         run: bun run typecheck
 
@@ -71,3 +74,35 @@ jobs:
           path: artifacts/*
           if-no-files-found: error
           retention-days: 14
+
+      # electron-builder 默认创建草稿；只有工件全部通过校验后才正式发布。
+      - name: Publish verified Windows update
+        if: github.ref == 'refs/heads/20004-edition'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            const root = process.env.GITHUB_WORKSPACE;
+            const version = JSON.parse(fs.readFileSync(path.join(root, 'apps/electron/package.json'), 'utf8')).version;
+            const tag = `v${version}`;
+            const releases = await github.paginate(github.rest.repos.listReleases, { ...context.repo, per_page: 100 });
+            const release = releases.find(item => item.tag_name === tag);
+            if (!release) throw new Error(`找不到待发布版本：${tag}`);
+            const assets = await github.paginate(github.rest.repos.listReleaseAssets, { ...context.repo, release_id: release.id, per_page: 100 });
+            const { verifyWindowsRelease } = require(path.join(root, 'apps/electron/scripts/verify-windows-release.cjs'));
+            const installer = verifyWindowsRelease(version, path.join(root, 'apps/electron/out'), assets);
+            const published = await github.rest.repos.updateRelease({
+              ...context.repo,
+              release_id: release.id,
+              tag_name: tag,
+              target_commitish: context.sha,
+              name: `Proma 20004 Edition ${version}`,
+              body: '支持从 cn20004/Proma 在线检查、下载和安装更新；保留 OpenCode Go 与所有复古主题。',
+              draft: false,
+              prerelease: false,
+              make_latest: 'true',
+            });
+            if (published.data.draft) throw new Error('发布后仍处于草稿状态');
+            core.notice(`已正式发布 ${tag}，在线更新工件：${installer}`);
+            await core.summary.addHeading('Windows 在线更新已发布').addLink(tag, published.data.html_url).write();
