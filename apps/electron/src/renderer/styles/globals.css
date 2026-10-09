@@ -3084,3 +3084,654 @@
 .theme-linux-installer-dark * {
   text-shadow: none !important;
 }
+
+/* 20004 Edition：复古桌面与文本终端主题。 */
+.theme-win31-light {
+  font-family: Tahoma, "Microsoft YaHei", sans-serif;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 0.0 0.0% 75.3%;
+  --foreground: 0.0 0.0% 0.0%;
+  --sidebar-primary-foreground: 0.0 0.0% 0.0%;
+  --content-area: 0.0 0.0% 75.3%;
+  --sidebar-surface: 0.0 0.0% 75.3%;
+  --tabbar-surface: 0.0 0.0% 75.3%;
+  --tab-surface: 0.0 0.0% 75.3%;
+  --tab-indicator: 240.0 100.0% 25.1%;
+  --muted: 0.0 0.0% 75.3%;
+  --muted-foreground: 0.0 0.0% 0.0%;
+  --border: 0.0 0.0% 50.2%;
+  --input: 0.0 0.0% 75.3%;
+  --input-surface: 0.0 0.0% 75.3%;
+  --ring: 240.0 100.0% 25.1%;
+  --primary: 240.0 100.0% 25.1%;
+  --primary-foreground: 0.0 0.0% 100.0%;
+  --secondary: 0.0 0.0% 75.3%;
+  --secondary-foreground: 0.0 0.0% 0.0%;
+  --accent: 240.0 100.0% 25.1%;
+  --accent-foreground: 0.0 0.0% 100.0%;
+  --card: 0.0 0.0% 75.3%;
+  --card-foreground: 0.0 0.0% 0.0%;
+  --popover: 0.0 0.0% 75.3%;
+  --popover-foreground: 0.0 0.0% 0.0%;
+  --dialog: 0.0 0.0% 75.3%;
+  --dialog-foreground: 0.0 0.0% 0.0%;
+  --sidebar-control-surface: 0.0 0.0% 75.3%;
+  --sidebar-control-surface-hover: 0.0 0.0% 75.3%;
+  --sidebar-control-stroke: 240.0 100.0% 25.1%;
+  --tooltip: 0.0 0.0% 75.3%;
+  --tooltip-foreground: 0.0 0.0% 0.0%;
+  --tooltip-muted: 0.0 0.0% 0.0%;
+  --code-bg: 0.0 0.0% 75.3%;
+  --dashed-border: 240.0 100.0% 25.1%;
+  --dashed-border-hover: 0.0 0.0% 0.0%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-win31-light ::selection { background: #000080; color: #ffffff; }
+.theme-win31-light :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-win31-light :is(input, textarea, select) { font-family: inherit; }
+.theme-win31-light :focus-visible { outline: 2px solid #000080; outline-offset: 2px; }
+.theme-win31-light :is(button, [role="button"]):not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #555; }
+.theme-win31-light :is(button, [role="button"]):active:not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #555, inset -1px -1px 0 #fff; }
+.theme-win31-light :is(input, textarea, select) { box-shadow: inset 1px 1px 0 #777, inset -1px -1px 0 #fff; }
+.theme-xp-blue-light {
+  font-family: Tahoma, "Microsoft YaHei", sans-serif;
+  --radius: 5px;
+  --radius-cap: 5px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 51.0 34.5% 88.6%;
+  --foreground: 224.6 43.2% 15.9%;
+  --sidebar-primary-foreground: 224.6 43.2% 15.9%;
+  --content-area: 51.0 34.5% 88.6%;
+  --sidebar-surface: 218.2 76.7% 91.6%;
+  --tabbar-surface: 218.2 76.7% 91.6%;
+  --tab-surface: 51.0 34.5% 88.6%;
+  --tab-indicator: 221.0 71.8% 50.0%;
+  --muted: 218.2 76.7% 91.6%;
+  --muted-foreground: 224.6 43.2% 15.9%;
+  --border: 0.0 0.0% 50.2%;
+  --input: 51.0 34.5% 88.6%;
+  --input-surface: 51.0 34.5% 88.6%;
+  --ring: 221.0 71.8% 50.0%;
+  --primary: 221.0 71.8% 50.0%;
+  --primary-foreground: 0.0 0.0% 100.0%;
+  --secondary: 218.2 76.7% 91.6%;
+  --secondary-foreground: 224.6 43.2% 15.9%;
+  --accent: 221.0 71.8% 50.0%;
+  --accent-foreground: 0.0 0.0% 100.0%;
+  --card: 51.0 34.5% 88.6%;
+  --card-foreground: 224.6 43.2% 15.9%;
+  --popover: 51.0 34.5% 88.6%;
+  --popover-foreground: 224.6 43.2% 15.9%;
+  --dialog: 51.0 34.5% 88.6%;
+  --dialog-foreground: 224.6 43.2% 15.9%;
+  --sidebar-control-surface: 51.0 34.5% 88.6%;
+  --sidebar-control-surface-hover: 218.2 76.7% 91.6%;
+  --sidebar-control-stroke: 221.0 71.8% 50.0%;
+  --tooltip: 51.0 34.5% 88.6%;
+  --tooltip-foreground: 224.6 43.2% 15.9%;
+  --tooltip-muted: 224.6 43.2% 15.9%;
+  --code-bg: 218.2 76.7% 91.6%;
+  --dashed-border: 221.0 71.8% 50.0%;
+  --dashed-border-hover: 224.6 43.2% 15.9%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-xp-blue-light ::selection { background: #245edb; color: #ffffff; }
+.theme-xp-blue-light :is(button, input, textarea, select, [role="button"]) { border-radius: 5px !important; }
+.theme-xp-blue-light :is(input, textarea, select) { font-family: inherit; }
+.theme-xp-blue-light :focus-visible { outline: 2px solid #245edb; outline-offset: 2px; }
+.theme-xp-blue-light :is(button, [role="button"]):not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #555; }
+.theme-xp-blue-light :is(button, [role="button"]):active:not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #555, inset -1px -1px 0 #fff; }
+.theme-xp-blue-light :is(input, textarea, select) { box-shadow: inset 1px 1px 0 #777, inset -1px -1px 0 #fff; }
+.theme-xp-blue-light [role="tab"][data-state="active"] { background: linear-gradient(to bottom, #ece9d8, #d9e5fa); border-top: 3px solid #245edb; }
+.theme-xp-blue-light button.bg-primary { background-image: linear-gradient(to bottom, rgba(255,255,255,.24), transparent 55%, rgba(0,0,0,.12)); }
+.theme-xp-olive-light {
+  font-family: Tahoma, "Microsoft YaHei", sans-serif;
+  --radius: 5px;
+  --radius-cap: 5px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 60.0 32.0% 90.2%;
+  --foreground: 97.5 20.0% 15.7%;
+  --sidebar-primary-foreground: 97.5 20.0% 15.7%;
+  --content-area: 60.0 32.0% 90.2%;
+  --sidebar-surface: 73.8 31.7% 83.9%;
+  --tabbar-surface: 73.8 31.7% 83.9%;
+  --tab-surface: 60.0 32.0% 90.2%;
+  --tab-indicator: 84.2 40.8% 29.8%;
+  --muted: 73.8 31.7% 83.9%;
+  --muted-foreground: 97.5 20.0% 15.7%;
+  --border: 0.0 0.0% 50.2%;
+  --input: 60.0 32.0% 90.2%;
+  --input-surface: 60.0 32.0% 90.2%;
+  --ring: 84.2 40.8% 29.8%;
+  --primary: 84.2 40.8% 29.8%;
+  --primary-foreground: 0.0 0.0% 100.0%;
+  --secondary: 73.8 31.7% 83.9%;
+  --secondary-foreground: 97.5 20.0% 15.7%;
+  --accent: 84.2 40.8% 29.8%;
+  --accent-foreground: 0.0 0.0% 100.0%;
+  --card: 60.0 32.0% 90.2%;
+  --card-foreground: 97.5 20.0% 15.7%;
+  --popover: 60.0 32.0% 90.2%;
+  --popover-foreground: 97.5 20.0% 15.7%;
+  --dialog: 60.0 32.0% 90.2%;
+  --dialog-foreground: 97.5 20.0% 15.7%;
+  --sidebar-control-surface: 60.0 32.0% 90.2%;
+  --sidebar-control-surface-hover: 73.8 31.7% 83.9%;
+  --sidebar-control-stroke: 84.2 40.8% 29.8%;
+  --tooltip: 60.0 32.0% 90.2%;
+  --tooltip-foreground: 97.5 20.0% 15.7%;
+  --tooltip-muted: 97.5 20.0% 15.7%;
+  --code-bg: 73.8 31.7% 83.9%;
+  --dashed-border: 84.2 40.8% 29.8%;
+  --dashed-border-hover: 97.5 20.0% 15.7%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-xp-olive-light ::selection { background: #526b2d; color: #ffffff; }
+.theme-xp-olive-light :is(button, input, textarea, select, [role="button"]) { border-radius: 5px !important; }
+.theme-xp-olive-light :is(input, textarea, select) { font-family: inherit; }
+.theme-xp-olive-light :focus-visible { outline: 2px solid #526b2d; outline-offset: 2px; }
+.theme-xp-olive-light :is(button, [role="button"]):not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #555; }
+.theme-xp-olive-light :is(button, [role="button"]):active:not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #555, inset -1px -1px 0 #fff; }
+.theme-xp-olive-light :is(input, textarea, select) { box-shadow: inset 1px 1px 0 #777, inset -1px -1px 0 #fff; }
+.theme-xp-olive-light [role="tab"][data-state="active"] { background: linear-gradient(to bottom, #eeeede, #dde3c9); border-top: 3px solid #526b2d; }
+.theme-xp-olive-light button.bg-primary { background-image: linear-gradient(to bottom, rgba(255,255,255,.24), transparent 55%, rgba(0,0,0,.12)); }
+.theme-xp-silver-light {
+  font-family: Tahoma, "Microsoft YaHei", sans-serif;
+  --radius: 5px;
+  --radius-cap: 5px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 240.0 21.4% 94.5%;
+  --foreground: 236.8 20.4% 18.2%;
+  --sidebar-primary-foreground: 236.8 20.4% 18.2%;
+  --content-area: 240.0 21.4% 94.5%;
+  --sidebar-surface: 240.0 19.3% 88.8%;
+  --tabbar-surface: 240.0 19.3% 88.8%;
+  --tab-surface: 240.0 21.4% 94.5%;
+  --tab-indicator: 234.0 13.3% 44.3%;
+  --muted: 240.0 19.3% 88.8%;
+  --muted-foreground: 236.8 20.4% 18.2%;
+  --border: 0.0 0.0% 50.2%;
+  --input: 240.0 21.4% 94.5%;
+  --input-surface: 240.0 21.4% 94.5%;
+  --ring: 234.0 13.3% 44.3%;
+  --primary: 234.0 13.3% 44.3%;
+  --primary-foreground: 0.0 0.0% 100.0%;
+  --secondary: 240.0 19.3% 88.8%;
+  --secondary-foreground: 236.8 20.4% 18.2%;
+  --accent: 234.0 13.3% 44.3%;
+  --accent-foreground: 0.0 0.0% 100.0%;
+  --card: 240.0 21.4% 94.5%;
+  --card-foreground: 236.8 20.4% 18.2%;
+  --popover: 240.0 21.4% 94.5%;
+  --popover-foreground: 236.8 20.4% 18.2%;
+  --dialog: 240.0 21.4% 94.5%;
+  --dialog-foreground: 236.8 20.4% 18.2%;
+  --sidebar-control-surface: 240.0 21.4% 94.5%;
+  --sidebar-control-surface-hover: 240.0 19.3% 88.8%;
+  --sidebar-control-stroke: 234.0 13.3% 44.3%;
+  --tooltip: 240.0 21.4% 94.5%;
+  --tooltip-foreground: 236.8 20.4% 18.2%;
+  --tooltip-muted: 236.8 20.4% 18.2%;
+  --code-bg: 240.0 19.3% 88.8%;
+  --dashed-border: 234.0 13.3% 44.3%;
+  --dashed-border-hover: 236.8 20.4% 18.2%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-xp-silver-light ::selection { background: #626580; color: #ffffff; }
+.theme-xp-silver-light :is(button, input, textarea, select, [role="button"]) { border-radius: 5px !important; }
+.theme-xp-silver-light :is(input, textarea, select) { font-family: inherit; }
+.theme-xp-silver-light :focus-visible { outline: 2px solid #626580; outline-offset: 2px; }
+.theme-xp-silver-light :is(button, [role="button"]):not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #555; }
+.theme-xp-silver-light :is(button, [role="button"]):active:not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #555, inset -1px -1px 0 #fff; }
+.theme-xp-silver-light :is(input, textarea, select) { box-shadow: inset 1px 1px 0 #777, inset -1px -1px 0 #fff; }
+.theme-xp-silver-light [role="tab"][data-state="active"] { background: linear-gradient(to bottom, #eeeef4, #dddde8); border-top: 3px solid #626580; }
+.theme-xp-silver-light button.bg-primary { background-image: linear-gradient(to bottom, rgba(255,255,255,.24), transparent 55%, rgba(0,0,0,.12)); }
+.theme-dos-dark {
+  font-family: "Cascadia Mono", Consolas, "Microsoft YaHei", monospace;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 0.0 0.0% 3.1%;
+  --foreground: 0.0 0.0% 83.9%;
+  --sidebar-primary-foreground: 0.0 0.0% 83.9%;
+  --content-area: 0.0 0.0% 3.1%;
+  --sidebar-surface: 0.0 0.0% 7.8%;
+  --tabbar-surface: 0.0 0.0% 7.8%;
+  --tab-surface: 0.0 0.0% 3.1%;
+  --tab-indicator: 0.0 0.0% 77.6%;
+  --muted: 0.0 0.0% 7.8%;
+  --muted-foreground: 0.0 0.0% 83.9%;
+  --border: 0.0 0.0% 77.6%;
+  --input: 0.0 0.0% 3.1%;
+  --input-surface: 0.0 0.0% 3.1%;
+  --ring: 0.0 0.0% 77.6%;
+  --primary: 0.0 0.0% 77.6%;
+  --primary-foreground: 0.0 0.0% 0.0%;
+  --secondary: 0.0 0.0% 7.8%;
+  --secondary-foreground: 0.0 0.0% 83.9%;
+  --accent: 0.0 0.0% 77.6%;
+  --accent-foreground: 0.0 0.0% 0.0%;
+  --card: 0.0 0.0% 3.1%;
+  --card-foreground: 0.0 0.0% 83.9%;
+  --popover: 0.0 0.0% 3.1%;
+  --popover-foreground: 0.0 0.0% 83.9%;
+  --dialog: 0.0 0.0% 3.1%;
+  --dialog-foreground: 0.0 0.0% 83.9%;
+  --sidebar-control-surface: 0.0 0.0% 3.1%;
+  --sidebar-control-surface-hover: 0.0 0.0% 7.8%;
+  --sidebar-control-stroke: 0.0 0.0% 77.6%;
+  --tooltip: 0.0 0.0% 3.1%;
+  --tooltip-foreground: 0.0 0.0% 83.9%;
+  --tooltip-muted: 0.0 0.0% 83.9%;
+  --code-bg: 0.0 0.0% 7.8%;
+  --dashed-border: 0.0 0.0% 77.6%;
+  --dashed-border-hover: 0.0 0.0% 83.9%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-dos-dark ::selection { background: #c6c6c6; color: #000000; }
+.theme-dos-dark :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-dos-dark :is(input, textarea, select) { font-family: inherit; }
+.theme-dos-dark :focus-visible { outline: 2px solid #c6c6c6; outline-offset: 2px; }
+.theme-dos-dark :is(button, [role="button"]) { border: 1px solid #c6c6c6; box-shadow: none; }
+.theme-dos-dark .rounded-full { border-radius: 0 !important; }
+.theme-green-terminal-dark {
+  font-family: "Cascadia Mono", Consolas, "Microsoft YaHei", monospace;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 144.0 41.7% 4.7%;
+  --foreground: 138.2 66.4% 70.8%;
+  --sidebar-primary-foreground: 138.2 66.4% 70.8%;
+  --content-area: 144.0 41.7% 4.7%;
+  --sidebar-surface: 144.7 41.5% 8.0%;
+  --tabbar-surface: 144.7 41.5% 8.0%;
+  --tab-surface: 144.0 41.7% 4.7%;
+  --tab-indicator: 138.2 66.4% 70.8%;
+  --muted: 144.7 41.5% 8.0%;
+  --muted-foreground: 138.2 66.4% 70.8%;
+  --border: 138.2 66.4% 70.8%;
+  --input: 144.0 41.7% 4.7%;
+  --input-surface: 144.0 41.7% 4.7%;
+  --ring: 138.2 66.4% 70.8%;
+  --primary: 138.2 66.4% 70.8%;
+  --primary-foreground: 144.0 41.7% 4.7%;
+  --secondary: 144.7 41.5% 8.0%;
+  --secondary-foreground: 138.2 66.4% 70.8%;
+  --accent: 138.2 66.4% 70.8%;
+  --accent-foreground: 144.0 41.7% 4.7%;
+  --card: 144.0 41.7% 4.7%;
+  --card-foreground: 138.2 66.4% 70.8%;
+  --popover: 144.0 41.7% 4.7%;
+  --popover-foreground: 138.2 66.4% 70.8%;
+  --dialog: 144.0 41.7% 4.7%;
+  --dialog-foreground: 138.2 66.4% 70.8%;
+  --sidebar-control-surface: 144.0 41.7% 4.7%;
+  --sidebar-control-surface-hover: 144.7 41.5% 8.0%;
+  --sidebar-control-stroke: 138.2 66.4% 70.8%;
+  --tooltip: 144.0 41.7% 4.7%;
+  --tooltip-foreground: 138.2 66.4% 70.8%;
+  --tooltip-muted: 138.2 66.4% 70.8%;
+  --code-bg: 144.7 41.5% 8.0%;
+  --dashed-border: 138.2 66.4% 70.8%;
+  --dashed-border-hover: 138.2 66.4% 70.8%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-green-terminal-dark ::selection { background: #83e6a1; color: #07110b; }
+.theme-green-terminal-dark :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-green-terminal-dark :is(input, textarea, select) { font-family: inherit; }
+.theme-green-terminal-dark :focus-visible { outline: 2px solid #83e6a1; outline-offset: 2px; }
+.theme-green-terminal-dark :is(button, [role="button"]) { border: 1px solid #83e6a1; box-shadow: none; }
+.theme-green-terminal-dark .rounded-full { border-radius: 0 !important; }
+.theme-amber-terminal-dark {
+  font-family: "Cascadia Mono", Consolas, "Microsoft YaHei", monospace;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 35.3 58.6% 5.7%;
+  --foreground: 37.8 100.0% 75.1%;
+  --sidebar-primary-foreground: 37.8 100.0% 75.1%;
+  --content-area: 35.3 58.6% 5.7%;
+  --sidebar-surface: 34.6 56.5% 9.0%;
+  --tabbar-surface: 34.6 56.5% 9.0%;
+  --tab-surface: 35.3 58.6% 5.7%;
+  --tab-indicator: 37.8 100.0% 75.1%;
+  --muted: 34.6 56.5% 9.0%;
+  --muted-foreground: 37.8 100.0% 75.1%;
+  --border: 37.8 100.0% 75.1%;
+  --input: 35.3 58.6% 5.7%;
+  --input-surface: 35.3 58.6% 5.7%;
+  --ring: 37.8 100.0% 75.1%;
+  --primary: 37.8 100.0% 75.1%;
+  --primary-foreground: 35.3 58.6% 5.7%;
+  --secondary: 34.6 56.5% 9.0%;
+  --secondary-foreground: 37.8 100.0% 75.1%;
+  --accent: 37.8 100.0% 75.1%;
+  --accent-foreground: 35.3 58.6% 5.7%;
+  --card: 35.3 58.6% 5.7%;
+  --card-foreground: 37.8 100.0% 75.1%;
+  --popover: 35.3 58.6% 5.7%;
+  --popover-foreground: 37.8 100.0% 75.1%;
+  --dialog: 35.3 58.6% 5.7%;
+  --dialog-foreground: 37.8 100.0% 75.1%;
+  --sidebar-control-surface: 35.3 58.6% 5.7%;
+  --sidebar-control-surface-hover: 34.6 56.5% 9.0%;
+  --sidebar-control-stroke: 37.8 100.0% 75.1%;
+  --tooltip: 35.3 58.6% 5.7%;
+  --tooltip-foreground: 37.8 100.0% 75.1%;
+  --tooltip-muted: 37.8 100.0% 75.1%;
+  --code-bg: 34.6 56.5% 9.0%;
+  --dashed-border: 37.8 100.0% 75.1%;
+  --dashed-border-hover: 37.8 100.0% 75.1%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-amber-terminal-dark ::selection { background: #ffd080; color: #171006; }
+.theme-amber-terminal-dark :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-amber-terminal-dark :is(input, textarea, select) { font-family: inherit; }
+.theme-amber-terminal-dark :focus-visible { outline: 2px solid #ffd080; outline-offset: 2px; }
+.theme-amber-terminal-dark :is(button, [role="button"]) { border: 1px solid #ffd080; box-shadow: none; }
+.theme-amber-terminal-dark .rounded-full { border-radius: 0 !important; }
+.theme-norton-dark {
+  font-family: "Cascadia Mono", Consolas, "Microsoft YaHei", monospace;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 240.0 100.0% 25.1%;
+  --foreground: 0.0 0.0% 100.0%;
+  --sidebar-primary-foreground: 0.0 0.0% 100.0%;
+  --content-area: 240.0 100.0% 25.1%;
+  --sidebar-surface: 240.0 100.0% 20.0%;
+  --tabbar-surface: 240.0 100.0% 20.0%;
+  --tab-surface: 240.0 100.0% 25.1%;
+  --tab-indicator: 60.0 100.0% 66.7%;
+  --muted: 240.0 100.0% 20.0%;
+  --muted-foreground: 0.0 0.0% 100.0%;
+  --border: 60.0 100.0% 66.7%;
+  --input: 240.0 100.0% 25.1%;
+  --input-surface: 240.0 100.0% 25.1%;
+  --ring: 60.0 100.0% 66.7%;
+  --primary: 60.0 100.0% 66.7%;
+  --primary-foreground: 0.0 0.0% 0.0%;
+  --secondary: 240.0 100.0% 20.0%;
+  --secondary-foreground: 0.0 0.0% 100.0%;
+  --accent: 60.0 100.0% 66.7%;
+  --accent-foreground: 0.0 0.0% 0.0%;
+  --card: 240.0 100.0% 25.1%;
+  --card-foreground: 0.0 0.0% 100.0%;
+  --popover: 240.0 100.0% 25.1%;
+  --popover-foreground: 0.0 0.0% 100.0%;
+  --dialog: 240.0 100.0% 25.1%;
+  --dialog-foreground: 0.0 0.0% 100.0%;
+  --sidebar-control-surface: 240.0 100.0% 25.1%;
+  --sidebar-control-surface-hover: 240.0 100.0% 20.0%;
+  --sidebar-control-stroke: 60.0 100.0% 66.7%;
+  --tooltip: 240.0 100.0% 25.1%;
+  --tooltip-foreground: 0.0 0.0% 100.0%;
+  --tooltip-muted: 0.0 0.0% 100.0%;
+  --code-bg: 240.0 100.0% 20.0%;
+  --dashed-border: 60.0 100.0% 66.7%;
+  --dashed-border-hover: 0.0 0.0% 100.0%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-norton-dark ::selection { background: #ffff55; color: #000000; }
+.theme-norton-dark :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-norton-dark :is(input, textarea, select) { font-family: inherit; }
+.theme-norton-dark :focus-visible { outline: 2px solid #ffff55; outline-offset: 2px; }
+.theme-norton-dark :is(button, [role="button"]) { border: 1px solid #ffff55; box-shadow: none; }
+.theme-norton-dark .rounded-full { border-radius: 0 !important; }
+.theme-turbo-pascal-dark {
+  font-family: "Cascadia Mono", Consolas, "Microsoft YaHei", monospace;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 230.1 100.0% 30.8%;
+  --foreground: 60.0 100.0% 86.7%;
+  --sidebar-primary-foreground: 60.0 100.0% 86.7%;
+  --content-area: 230.1 100.0% 30.8%;
+  --sidebar-surface: 230.9 100.0% 23.3%;
+  --tabbar-surface: 230.9 100.0% 23.3%;
+  --tab-surface: 230.1 100.0% 30.8%;
+  --tab-indicator: 180.0 100.0% 86.5%;
+  --muted: 230.9 100.0% 23.3%;
+  --muted-foreground: 60.0 100.0% 86.7%;
+  --border: 180.0 100.0% 86.5%;
+  --input: 230.1 100.0% 30.8%;
+  --input-surface: 230.1 100.0% 30.8%;
+  --ring: 180.0 100.0% 86.5%;
+  --primary: 180.0 100.0% 86.5%;
+  --primary-foreground: 220.5 100.0% 15.7%;
+  --secondary: 230.9 100.0% 23.3%;
+  --secondary-foreground: 60.0 100.0% 86.7%;
+  --accent: 180.0 100.0% 86.5%;
+  --accent-foreground: 220.5 100.0% 15.7%;
+  --card: 230.1 100.0% 30.8%;
+  --card-foreground: 60.0 100.0% 86.7%;
+  --popover: 230.1 100.0% 30.8%;
+  --popover-foreground: 60.0 100.0% 86.7%;
+  --dialog: 230.1 100.0% 30.8%;
+  --dialog-foreground: 60.0 100.0% 86.7%;
+  --sidebar-control-surface: 230.1 100.0% 30.8%;
+  --sidebar-control-surface-hover: 230.9 100.0% 23.3%;
+  --sidebar-control-stroke: 180.0 100.0% 86.5%;
+  --tooltip: 230.1 100.0% 30.8%;
+  --tooltip-foreground: 60.0 100.0% 86.7%;
+  --tooltip-muted: 60.0 100.0% 86.7%;
+  --code-bg: 230.9 100.0% 23.3%;
+  --dashed-border: 180.0 100.0% 86.5%;
+  --dashed-border-hover: 60.0 100.0% 86.7%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-turbo-pascal-dark ::selection { background: #baffff; color: #001a50; }
+.theme-turbo-pascal-dark :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-turbo-pascal-dark :is(input, textarea, select) { font-family: inherit; }
+.theme-turbo-pascal-dark :focus-visible { outline: 2px solid #baffff; outline-offset: 2px; }
+.theme-turbo-pascal-dark :is(button, [role="button"]) { border: 1px solid #baffff; box-shadow: none; }
+.theme-turbo-pascal-dark .rounded-full { border-radius: 0 !important; }
+.theme-mac-classic-light {
+  font-family: Tahoma, "Microsoft YaHei", sans-serif;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 0.0 0.0% 100.0%;
+  --foreground: 0.0 0.0% 0.0%;
+  --sidebar-primary-foreground: 0.0 0.0% 0.0%;
+  --content-area: 0.0 0.0% 100.0%;
+  --sidebar-surface: 0.0 0.0% 86.7%;
+  --tabbar-surface: 0.0 0.0% 86.7%;
+  --tab-surface: 0.0 0.0% 100.0%;
+  --tab-indicator: 0.0 0.0% 13.3%;
+  --muted: 0.0 0.0% 86.7%;
+  --muted-foreground: 0.0 0.0% 0.0%;
+  --border: 0.0 0.0% 50.2%;
+  --input: 0.0 0.0% 100.0%;
+  --input-surface: 0.0 0.0% 100.0%;
+  --ring: 0.0 0.0% 13.3%;
+  --primary: 0.0 0.0% 13.3%;
+  --primary-foreground: 0.0 0.0% 100.0%;
+  --secondary: 0.0 0.0% 86.7%;
+  --secondary-foreground: 0.0 0.0% 0.0%;
+  --accent: 0.0 0.0% 13.3%;
+  --accent-foreground: 0.0 0.0% 100.0%;
+  --card: 0.0 0.0% 100.0%;
+  --card-foreground: 0.0 0.0% 0.0%;
+  --popover: 0.0 0.0% 100.0%;
+  --popover-foreground: 0.0 0.0% 0.0%;
+  --dialog: 0.0 0.0% 100.0%;
+  --dialog-foreground: 0.0 0.0% 0.0%;
+  --sidebar-control-surface: 0.0 0.0% 100.0%;
+  --sidebar-control-surface-hover: 0.0 0.0% 86.7%;
+  --sidebar-control-stroke: 0.0 0.0% 13.3%;
+  --tooltip: 0.0 0.0% 100.0%;
+  --tooltip-foreground: 0.0 0.0% 0.0%;
+  --tooltip-muted: 0.0 0.0% 0.0%;
+  --code-bg: 0.0 0.0% 86.7%;
+  --dashed-border: 0.0 0.0% 13.3%;
+  --dashed-border-hover: 0.0 0.0% 0.0%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-mac-classic-light ::selection { background: #222222; color: #ffffff; }
+.theme-mac-classic-light :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-mac-classic-light :is(input, textarea, select) { font-family: inherit; }
+.theme-mac-classic-light :focus-visible { outline: 2px solid #222222; outline-offset: 2px; }
+.theme-mac-classic-light :is(button, [role="button"]) { border: 1px solid #000; box-shadow: 2px 2px 0 #000; }
+.theme-mac-classic-light :is(button, [role="button"]):active { box-shadow: none; }
+.theme-mac-classic-light [role="tablist"] { background-image: repeating-linear-gradient(0deg, #fff 0 2px, #ddd 2px 3px); }
+.theme-amiga-light {
+  font-family: "Cascadia Mono", Consolas, "Microsoft YaHei", monospace;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 0.0 0.0% 66.7%;
+  --foreground: 0.0 0.0% 0.0%;
+  --sidebar-primary-foreground: 0.0 0.0% 0.0%;
+  --content-area: 0.0 0.0% 66.7%;
+  --sidebar-surface: 214.3 36.3% 73.5%;
+  --tabbar-surface: 214.3 36.3% 73.5%;
+  --tab-surface: 0.0 0.0% 66.7%;
+  --tab-indicator: 217.7 74.9% 35.9%;
+  --muted: 214.3 36.3% 73.5%;
+  --muted-foreground: 0.0 0.0% 0.0%;
+  --border: 217.7 74.9% 35.9%;
+  --input: 0.0 0.0% 66.7%;
+  --input-surface: 0.0 0.0% 66.7%;
+  --ring: 217.7 74.9% 35.9%;
+  --primary: 217.7 74.9% 35.9%;
+  --primary-foreground: 0.0 0.0% 100.0%;
+  --secondary: 214.3 36.3% 73.5%;
+  --secondary-foreground: 0.0 0.0% 0.0%;
+  --accent: 217.7 74.9% 35.9%;
+  --accent-foreground: 0.0 0.0% 100.0%;
+  --card: 0.0 0.0% 66.7%;
+  --card-foreground: 0.0 0.0% 0.0%;
+  --popover: 0.0 0.0% 66.7%;
+  --popover-foreground: 0.0 0.0% 0.0%;
+  --dialog: 0.0 0.0% 66.7%;
+  --dialog-foreground: 0.0 0.0% 0.0%;
+  --sidebar-control-surface: 0.0 0.0% 66.7%;
+  --sidebar-control-surface-hover: 214.3 36.3% 73.5%;
+  --sidebar-control-stroke: 217.7 74.9% 35.9%;
+  --tooltip: 0.0 0.0% 66.7%;
+  --tooltip-foreground: 0.0 0.0% 0.0%;
+  --tooltip-muted: 0.0 0.0% 0.0%;
+  --code-bg: 214.3 36.3% 73.5%;
+  --dashed-border: 217.7 74.9% 35.9%;
+  --dashed-border-hover: 0.0 0.0% 0.0%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-amiga-light ::selection { background: #174aa0; color: #ffffff; }
+.theme-amiga-light :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-amiga-light :is(input, textarea, select) { font-family: inherit; }
+.theme-amiga-light :focus-visible { outline: 2px solid #174aa0; outline-offset: 2px; }
+.theme-amiga-light :is(button, [role="button"]):not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #555; }
+.theme-amiga-light :is(button, [role="button"]):active:not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #555, inset -1px -1px 0 #fff; }
+.theme-amiga-light :is(input, textarea, select) { box-shadow: inset 1px 1px 0 #777, inset -1px -1px 0 #fff; }
+.theme-os2-light {
+  font-family: Tahoma, "Microsoft YaHei", sans-serif;
+  --radius: 0px;
+  --radius-cap: 0px;
+  --radius-xl-extra: 0px;
+  --radius-2xl-extra: 0px;
+  --background: 40.0 12.2% 80.8%;
+  --foreground: 0.0 0.0% 6.7%;
+  --sidebar-primary-foreground: 0.0 0.0% 6.7%;
+  --content-area: 40.0 12.2% 80.8%;
+  --sidebar-surface: 180.0 13.8% 65.9%;
+  --tabbar-surface: 180.0 13.8% 65.9%;
+  --tab-surface: 40.0 12.2% 80.8%;
+  --tab-indicator: 333.9 37.8% 32.2%;
+  --muted: 180.0 13.8% 65.9%;
+  --muted-foreground: 0.0 0.0% 6.7%;
+  --border: 0.0 0.0% 50.2%;
+  --input: 40.0 12.2% 80.8%;
+  --input-surface: 40.0 12.2% 80.8%;
+  --ring: 333.9 37.8% 32.2%;
+  --primary: 333.9 37.8% 32.2%;
+  --primary-foreground: 0.0 0.0% 100.0%;
+  --secondary: 180.0 13.8% 65.9%;
+  --secondary-foreground: 0.0 0.0% 6.7%;
+  --accent: 333.9 37.8% 32.2%;
+  --accent-foreground: 0.0 0.0% 100.0%;
+  --card: 40.0 12.2% 80.8%;
+  --card-foreground: 0.0 0.0% 6.7%;
+  --popover: 40.0 12.2% 80.8%;
+  --popover-foreground: 0.0 0.0% 6.7%;
+  --dialog: 40.0 12.2% 80.8%;
+  --dialog-foreground: 0.0 0.0% 6.7%;
+  --sidebar-control-surface: 40.0 12.2% 80.8%;
+  --sidebar-control-surface-hover: 180.0 13.8% 65.9%;
+  --sidebar-control-stroke: 333.9 37.8% 32.2%;
+  --tooltip: 40.0 12.2% 80.8%;
+  --tooltip-foreground: 0.0 0.0% 6.7%;
+  --tooltip-muted: 0.0 0.0% 6.7%;
+  --code-bg: 180.0 13.8% 65.9%;
+  --dashed-border: 333.9 37.8% 32.2%;
+  --dashed-border-hover: 0.0 0.0% 6.7%;
+  --shadow-xs: none;
+  --shadow-sm: 1px 1px 0 rgba(0,0,0,.25);
+  --shadow-md: 2px 2px 0 rgba(0,0,0,.25);
+  --shadow-lg: 3px 3px 0 rgba(0,0,0,.25);
+  --shadow-xl: 4px 4px 0 rgba(0,0,0,.25);
+}
+.theme-os2-light ::selection { background: #71334e; color: #ffffff; }
+.theme-os2-light :is(button, input, textarea, select, [role="button"]) { border-radius: 0px !important; }
+.theme-os2-light :is(input, textarea, select) { font-family: inherit; }
+.theme-os2-light :focus-visible { outline: 2px solid #71334e; outline-offset: 2px; }
+.theme-os2-light :is(button, [role="button"]):not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #fff, inset -1px -1px 0 #555; }
+.theme-os2-light :is(button, [role="button"]):active:not([data-no-retro-bevel]) { box-shadow: inset 1px 1px 0 #555, inset -1px -1px 0 #fff; }
+.theme-os2-light :is(input, textarea, select) { box-shadow: inset 1px 1px 0 #777, inset -1px -1px 0 #fff; }

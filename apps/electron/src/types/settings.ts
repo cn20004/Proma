@@ -236,6 +236,18 @@ export const THEME_STYLES = [
   'terminal-dark',
   'win95-light',
   'linux-installer-dark',
+  'win31-light',
+  'xp-blue-light',
+  'xp-olive-light',
+  'xp-silver-light',
+  'dos-dark',
+  'green-terminal-dark',
+  'amber-terminal-dark',
+  'norton-dark',
+  'turbo-pascal-dark',
+  'mac-classic-light',
+  'amiga-light',
+  'os2-light',
 ] as const
 
 /** 特殊风格主题 */

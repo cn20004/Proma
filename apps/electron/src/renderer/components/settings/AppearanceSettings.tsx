@@ -57,6 +57,19 @@ import themeTerminalDark from '@/assets/theme-previews/theme-terminal-dark.png'
 import themeWin95 from '@/assets/theme-previews/theme-win95.svg'
 import themeLinuxInstaller from '@/assets/theme-previews/theme-linux-installer.svg'
 
+import themeWin31 from '@/assets/theme-previews/theme-win31-light.svg'
+import themeXpBlue from '@/assets/theme-previews/theme-xp-blue-light.svg'
+import themeXpOlive from '@/assets/theme-previews/theme-xp-olive-light.svg'
+import themeXpSilver from '@/assets/theme-previews/theme-xp-silver-light.svg'
+import themeDos from '@/assets/theme-previews/theme-dos-dark.svg'
+import themeGreenTerminal from '@/assets/theme-previews/theme-green-terminal-dark.svg'
+import themeAmberTerminal from '@/assets/theme-previews/theme-amber-terminal-dark.svg'
+import themeNorton from '@/assets/theme-previews/theme-norton-dark.svg'
+import themeTurboPascal from '@/assets/theme-previews/theme-turbo-pascal-dark.svg'
+import themeMacClassic from '@/assets/theme-previews/theme-mac-classic-light.svg'
+import themeAmiga from '@/assets/theme-previews/theme-amiga-light.svg'
+import themeOs2 from '@/assets/theme-previews/theme-os2-light.svg'
+
 /** 主题选项 */
 const THEME_OPTIONS = [
   { value: 'light', label: '浅色' },
@@ -91,6 +104,18 @@ interface SpecialStyle {
 }
 
 const SPECIAL_STYLES: readonly SpecialStyle[] = [
+  { id: 'win31-light', name: 'Windows 3.1', variant: 'light', image: themeWin31, tooltip: '复古风格：Windows 3.1' },
+  { id: 'xp-blue-light', name: 'Windows XP 蓝色', variant: 'light', image: themeXpBlue, tooltip: '复古风格：Windows XP 蓝色' },
+  { id: 'xp-olive-light', name: 'Windows XP 橄榄绿', variant: 'light', image: themeXpOlive, tooltip: '复古风格：Windows XP 橄榄绿' },
+  { id: 'xp-silver-light', name: 'Windows XP 银色', variant: 'light', image: themeXpSilver, tooltip: '复古风格：Windows XP 银色' },
+  { id: 'dos-dark', name: 'MS-DOS 黑屏', variant: 'dark', image: themeDos, tooltip: '复古风格：MS-DOS 黑屏' },
+  { id: 'green-terminal-dark', name: '绿字终端', variant: 'dark', image: themeGreenTerminal, tooltip: '复古风格：绿字终端' },
+  { id: 'amber-terminal-dark', name: '琥珀终端', variant: 'dark', image: themeAmberTerminal, tooltip: '复古风格：琥珀终端' },
+  { id: 'norton-dark', name: 'Norton Commander', variant: 'dark', image: themeNorton, tooltip: '复古风格：Norton Commander' },
+  { id: 'turbo-pascal-dark', name: 'Turbo Pascal', variant: 'dark', image: themeTurboPascal, tooltip: '复古风格：Turbo Pascal' },
+  { id: 'mac-classic-light', name: 'Macintosh 经典', variant: 'light', image: themeMacClassic, tooltip: '复古风格：Macintosh 经典' },
+  { id: 'amiga-light', name: 'Amiga Workbench', variant: 'light', image: themeAmiga, tooltip: '复古风格：Amiga Workbench' },
+  { id: 'os2-light', name: 'OS/2 Warp', variant: 'light', image: themeOs2, tooltip: '复古风格：OS/2 Warp' },
   {
     id: 'slate-light',
     name: '云朵舞者',
