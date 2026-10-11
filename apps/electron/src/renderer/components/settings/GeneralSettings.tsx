@@ -371,7 +371,7 @@ export function GeneralSettings(): React.ReactElement {
           )}
           <SettingsRow
             label="自动归档"
-            description="超过指定天数未更新的对话将自动归档（置顶对话除外）"
+            description="超过指定天数未更新的对话将自动归档；置顶、永久保留会话及受保护项目除外"
           >
             <Select value={String(archiveAfterDays)} onValueChange={handleArchiveDaysChange}>
               <SelectTrigger className="w-[120px] h-8 text-[13px]">

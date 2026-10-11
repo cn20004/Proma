@@ -17,7 +17,7 @@
 
 import * as React from 'react'
 import { useAtom, useAtomValue, useSetAtom } from 'jotai'
-import { Search, X, MessageSquare, Bot, Archive, Loader2 } from 'lucide-react'
+import { Search, X, MessageSquare, Bot, Loader2 } from 'lucide-react'
 import { Dialog, DialogContent, DialogPortal, DialogTitle } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { searchDialogOpenAtom } from '@/atoms/search-atoms'
@@ -173,7 +173,7 @@ function SearchResultRow({
             </span>
           )}
           {result.archived && (
-            <Archive size={12} className="flex-shrink-0 text-foreground/30" />
+            <span className="flex-shrink-0 text-xs text-muted-foreground">已归档</span>
           )}
         </div>
         {isContent && (
@@ -207,6 +207,7 @@ export function SearchDialog(): React.ReactElement {
   const [open, setOpen] = useAtom(searchDialogOpenAtom)
   const conversations = useAtomValue(conversationsAtom)
   const agentSessions = useAtomValue(agentSessionsAtom)
+  const [searchSessions, setSearchSessions] = React.useState<import('@proma/shared').AgentSessionMeta[]>([])
   const sessionHoverPreviewEnabled = useAtomValue(sessionHoverPreviewEnabledAtom)
   const agentWorkspaces = useAtomValue(agentWorkspacesAtom)
   const channels = useAtomValue(channelsAtom)
@@ -224,10 +225,10 @@ export function SearchDialog(): React.ReactElement {
   }, [agentWorkspaces])
 
   const getAgentWorkspaceName = React.useCallback((sessionId: string): string | undefined => {
-    const session = agentSessions.find((s) => s.id === sessionId)
+    const session = searchSessions.find((s) => s.id === sessionId) ?? agentSessions.find((s) => s.id === sessionId)
     if (!session?.workspaceId) return undefined
     return workspaceNameMap.get(session.workspaceId)
-  }, [agentSessions, workspaceNameMap])
+  }, [agentSessions, searchSessions, workspaceNameMap])
 
   // query：输入框当前值（实时跟随用户）
   // committedQuery：用户已确认提交的搜索词（点击/回车后才更新），用于结果展示与高亮
@@ -289,6 +290,16 @@ export function SearchDialog(): React.ReactElement {
     setLoading(true)
     setSelectedIndex(0)
 
+    let allSessions: import('@proma/shared').AgentSessionMeta[] = []
+    try {
+      allSessions = appMode === 'agent' ? await window.electronAPI.listAgentSessions() : []
+      if (token !== searchTokenRef.current) return
+      setSearchSessions(allSessions)
+    } catch (error) {
+      console.error('[搜索] 读取全部会话失败', error)
+      if (token === searchTokenRef.current) setLoading(false)
+      return
+    }
     const isChatMode = appMode === 'chat'
     const isAgentMode = appMode === 'agent'
     const matchesTitle = (title: string): boolean => findBestSearchMatch(title, q) !== null
@@ -297,7 +308,7 @@ export function SearchDialog(): React.ReactElement {
         .filter((c) => matchesTitle(c.title))
         .map((c) => ({ id: c.id, title: c.title, type: 'chat' as const, archived: c.archived, updatedAt: c.updatedAt }))
       : isAgentMode
-        ? agentSessions
+        ? allSessions
           .filter((s) => matchesTitle(s.title))
           .map((s) => ({ id: s.id, title: s.title, type: 'agent' as const, archived: s.archived, updatedAt: s.updatedAt }))
         : [])
@@ -395,11 +406,11 @@ export function SearchDialog(): React.ReactElement {
       const title = conv?.title ?? result.title
       openSession('chat', result.id, title)
     } else {
-      const session = agentSessions.find((s) => s.id === result.id)
+      const session = searchSessions.find((s) => s.id === result.id) ?? agentSessions.find((s) => s.id === result.id)
       const title = session?.title ?? result.title
-      openSession('agent', result.id, title)
+      openSession('agent', result.id, title, { sessionMeta: session })
     }
-  }, [setOpen, setActiveView, openSession, conversations, agentSessions])
+  }, [setOpen, setActiveView, openSession, conversations, agentSessions, searchSessions])
 
   /**
    * Enter 键语义：

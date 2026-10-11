@@ -40,6 +40,9 @@ jobs:
       - name: Test update publication
         run: bun test apps/electron/scripts/verify-windows-release.test.ts apps/electron/scripts/github-update-channel.test.ts
 
+      - name: Test archive protection and recovery
+        run: bun test apps/electron/src/main/lib/archive-policy.test.ts
+
       - name: Typecheck
         run: bun run typecheck
 

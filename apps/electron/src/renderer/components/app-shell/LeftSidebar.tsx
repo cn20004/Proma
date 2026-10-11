@@ -1,3 +1,5 @@
+import { ArchiveCenter, useArchiveActions } from './ArchiveCenter'
+import { archivePolicyAtom, archiveCenterAtom } from '@/atoms/archive-policy'
 /**
  * LeftSidebar - 左侧导航栏
  *
@@ -600,6 +602,9 @@ function deleteSetEntry<T>(prev: Set<T>, value: T): Set<T> {
 }
 
 export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.ReactElement {
+  const [archivePolicy, setArchivePolicy] = useAtom(archivePolicyAtom)
+  React.useEffect(() => { window.electronAPI.getArchivePolicy().then(setArchivePolicy).catch(console.error) }, [setArchivePolicy])
+
   const [activeView, setActiveView] = useAtom(activeViewAtom)
   const setAutomationForm = useSetAtom(automationFormAtom)
   const setPlanningTab = useSetAtom(planningTabAtom)
@@ -743,6 +748,16 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     setSettingsOpen(true)
   }, [setSettingsOpen])
 
+  React.useEffect(() => {
+    const refresh = (): void => { void refreshAgentSidebarSessions(viewMode === 'archived').catch(console.error) }
+    window.addEventListener('archive-policy-changed', refresh)
+    const unsubscribe = window.electronAPI.onArchivePolicyChanged(() => {
+      refresh()
+      window.electronAPI.getArchivePolicy().then(setArchivePolicy).catch(console.error)
+      window.electronAPI.listConversations().then(setConversations).catch(console.error)
+    })
+    return () => { unsubscribe(); window.removeEventListener('archive-policy-changed', refresh) }
+  }, [viewMode, refreshAgentSidebarSessions, setArchivePolicy, setConversations])
   /** 归档视图按需加载归档列表，离开后恢复轻量 active 列表。 */
   React.useEffect(() => {
     if (mode !== 'agent') return
@@ -1102,6 +1117,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
   /** 切换对话归档状态 */
   const handleToggleArchive = React.useCallback(async (id: string): Promise<void> => {
     try {
+      if (!(await window.electronAPI.confirmManualArchive('chat', id))) return
       const updated = await window.electronAPI.toggleArchiveConversation(id)
       setConversations((prev) =>
         prev.map((c) => (c.id === updated.id ? updated : c))
@@ -2105,6 +2121,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     let cascaded = false
     const changedChildIds: string[] = []
     try {
+      if (!(await window.electronAPI.confirmManualArchive('agent', id))) return
       const updated = await window.electronAPI.toggleArchiveAgentSession(id)
       const targetArchived = !!updated.archived
       // 归档：同步未归档的子会话一起进归档
@@ -2231,12 +2248,12 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
         sessionsByWorkspaceId.get(targetId)!.push(session)
       }
 
-      return workspaces.map((workspace) => ({
+      return [...workspaces].sort((a, b) => Number(!!archivePolicy.projects[b.id]?.pinned) - Number(!!archivePolicy.projects[a.id]?.pinned)).map((workspace) => ({
         workspace,
         sessions: sessionsByWorkspaceId.get(workspace.id) ?? [],
       }))
     },
-    [agentSessions, draftSessionIds, workspaces],
+    [agentSessions, draftSessionIds, workspaces, archivePolicy],
   )
 
   /**
@@ -3568,6 +3585,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
         )}
       </div>
 
+      <ArchiveCenter />
       {/* 原生与虚拟列表共享顶部反馈，切换视图时不沿用上一列表的滚动状态。 */}
       {mode === 'chat' && viewMode === 'active' ? (
         <SidebarScrollBoundary key="chat-active-boundary">
@@ -3943,6 +3961,9 @@ const ConversationItem = React.memo(function ConversationItem({
   onTogglePin,
   onToggleArchive,
 }: ConversationItemProps): React.ReactElement {
+  const { policy, change } = useArchiveActions()
+  const permanentlyKept = !!policy.sessions[`chat:${conversation.id}`]
+
   const sessionHoverPreviewEnabled = useAtomValue(sessionHoverPreviewEnabledAtom)
   const [editing, setEditing] = React.useState(false)
   const [editTitle, setEditTitle] = React.useState('')
@@ -4002,6 +4023,9 @@ const ConversationItem = React.memo(function ConversationItem({
       <MenuItem className="text-xs py-1 [&>svg]:size-3.5" onSelect={() => startEdit()}>
         <Pencil size={14} />
         重命名
+      </MenuItem>
+      <MenuItem className="text-xs py-1" onSelect={() => { void change({ scope: 'chat', id: conversation.id, keep: !permanentlyKept }) }}>
+        {permanentlyKept ? '永久保留（点击取消）' : '永不自动归档'}
       </MenuItem>
       <MenuItem className="text-xs py-1 [&>svg]:size-3.5" onSelect={() => onToggleArchive(conversation.id)}>
         {conversation.archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
@@ -4068,7 +4092,7 @@ const ConversationItem = React.memo(function ConversationItem({
                 {showPinIcon && (
                   <Pin size={11} className="flex-shrink-0 text-primary/60" />
                 )}
-                <span className="truncate">{conversation.title}</span>
+                <span className="truncate">{conversation.title}{permanentlyKept && <span className="ml-1 text-[10px] text-primary">永久保留</span>}</span>
               </div>
             )}
           </div>
@@ -4180,6 +4204,9 @@ const AgentSessionItem = React.memo(function AgentSessionItem({
   onToggleStar,
   onToggleArchive,
 }: AgentSessionItemProps): React.ReactElement {
+  const { policy, change } = useArchiveActions()
+  const permanentlyKept = !!policy.sessions[`agent:${session.id}`] || !!policy.projects[session.workspaceId ?? '']?.keep
+
   const [editing, setEditing] = React.useState(false)
   const [editTitle, setEditTitle] = React.useState('')
   const [menuOpen, setMenuOpen] = React.useState(false)
@@ -4312,6 +4339,9 @@ const AgentSessionItem = React.memo(function AgentSessionItem({
         <Pencil size={14} />
         重命名
       </MenuItem>
+      <MenuItem className="text-xs py-1" disabled={!!policy.projects[session.workspaceId ?? '']?.keep} onSelect={() => { void change({ scope: 'agent', id: session.id, keep: !permanentlyKept }) }}>
+        {policy.projects[session.workspaceId ?? '']?.keep ? '由项目保护：永久保留' : permanentlyKept ? '永久保留（点击取消）' : '永不自动归档'}
+      </MenuItem>
       <MenuItem className="text-xs py-1 [&>svg]:size-3.5" onSelect={() => onToggleArchive(session.id)}>
         {session.archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
         {session.archived ? '取消归档' : '归档'}
@@ -4407,6 +4437,7 @@ const AgentSessionItem = React.memo(function AgentSessionItem({
                   }}
                 >
                   {session.title}
+                  {permanentlyKept && <span className="ml-1 text-[10px] text-primary" title="永不自动归档">永久保留</span>}
                 </span>
                 <SafeTooltip content={session.starred ? '取消星标' : '添加星标'} side="top">
                   <button
@@ -4732,6 +4763,10 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
   onToggleDelegationParent,
   hideSessions = false,
 }: AgentProjectGroupItemProps): React.ReactElement {
+  const { policy, change } = useArchiveActions()
+  const setArchiveCenter = useSetAtom(archiveCenterAtom)
+  const archivePref = policy.projects[group.workspace.id] ?? {}
+
   const isCurrent = group.workspace.id === currentWorkspaceId
   const sessionHoverPreviewEnabled = useAtomValue(sessionHoverPreviewEnabledAtom)
   const hasUnavailableProjectRoot = Boolean(
@@ -4842,7 +4877,9 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
             )}
             <span className="flex min-w-0 items-center gap-1.5">
               <span className="min-w-0 truncate text-[13px] font-medium leading-[18px]">
-                {group.workspace.name}
+                <span style={{ color: archivePref.color }}>{archivePref.icon || '📁'} {group.workspace.name}</span>
+                {archivePref.pinned && <span title="置顶项目"> 📌</span>}
+                {archivePref.keep && <span className="ml-1 text-[10px] text-primary">永久保留</span>}
               </span>
               <LocalProjectBadge
                 projectRootPath={group.workspace.projectRootPath}
@@ -4896,12 +4933,22 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
             <button
               type="button"
               aria-label="项目菜单"
-              className="absolute right-5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-md text-foreground/30 opacity-0 transition-colors hover:bg-foreground/[0.055] hover:text-foreground/60 group-hover/project:opacity-100 data-[state=open]:opacity-100 titlebar-no-drag"
+              className="absolute right-5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-md text-foreground/60 transition-colors hover:bg-foreground/[0.055] hover:text-foreground/80 group-hover/project:opacity-100 data-[state=open]:opacity-100 titlebar-no-drag"
             >
               <MoreHorizontal size={13} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-44 z-[9999] min-w-0 p-0.5">
+            <DropdownMenuItem onSelect={() => { void change({ scope: 'project', id: group.workspace.id, keep: !archivePref.keep }) }}>
+              {archivePref.keep ? '取消永久保留' : '永不自动归档'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => { void change({ scope: 'project', id: group.workspace.id, pinned: !archivePref.pinned }) }}>
+              {archivePref.pinned ? '取消项目置顶' : '置顶项目'}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setArchiveCenter({ open: true, projectId: group.workspace.id })}>
+              全部会话 / 恢复归档 / 图标颜色
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-xs py-1 [&>svg]:size-3.5"
               onSelect={() => onSelectProject(group.workspace.id)}

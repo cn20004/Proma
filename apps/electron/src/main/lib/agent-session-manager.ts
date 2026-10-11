@@ -1,3 +1,4 @@
+import { readArchivePolicy, shouldAutoArchive, recordAutoArchive } from './archive-policy'
 /**
  * Agent 会话管理器
  *
@@ -1209,18 +1210,21 @@ export function updateSDKUserMessageSkillActivations(
  */
 export function autoArchiveAgentSessions(daysThreshold: number): number {
   const index = readIndex()
-  const threshold = Date.now() - daysThreshold * 86_400_000
+  const policy = readArchivePolicy()
+  const entries: import('@proma/shared').ArchiveLogEntry[] = []
   let count = 0
 
   for (const session of index.sessions) {
     // 草稿没有侧栏入口；自动归档后无法由 Welcome 恢复，会变成不可达记录。
-    if (!session.isDraft && !session.pinned && !session.archived && session.updatedAt < threshold) {
+    if (shouldAutoArchive(policy, 'agent', session, daysThreshold)) {
+      entries.push({ kind: 'agent', id: session.id, title: session.title, updatedAt: session.updatedAt })
       session.archived = true
       count++
     }
   }
 
   if (count > 0) {
+    recordAutoArchive(entries)
     writeIndex(index)
     console.log(`[Agent 会话] 自动归档 ${count} 个会话（阈值: ${daysThreshold} 天）`)
   }

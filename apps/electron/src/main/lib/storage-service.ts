@@ -1,3 +1,4 @@
+import { readArchivePolicy, isArchiveProtected } from './archive-policy'
 /**
  * 存储管理服务
  *
@@ -529,13 +530,14 @@ async function cleanupOrphanWorkspaces(): Promise<CleanupResult> {
 }
 
 function cleanupArchivedSessions(beforeDays: number): CleanupResult {
+  const policy = readArchivePolicy()
   const cutoff = Date.now() - beforeDays * 24 * 60 * 60 * 1000
   const sessions = listAgentSessions()
   let freedBytes = 0, deletedCount = 0
   const errors: string[] = []
 
   for (const session of sessions) {
-    if (!session.archived || session.updatedAt > cutoff) continue
+    if (!session.archived || session.updatedAt > cutoff || isArchiveProtected(policy, 'agent', session.id, session.workspaceId)) continue
 
     // 删除 JSONL 消息文件
     const msgPath = join(getAgentSessionsDir(), `${session.id}.jsonl`)

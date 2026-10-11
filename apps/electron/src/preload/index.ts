@@ -1,3 +1,5 @@
+import { ARCHIVE_POLICY_CHANNELS } from '@proma/shared'
+import type { ArchivePolicy, ArchivePolicyChange } from '@proma/shared'
 /**
  * Preload 脚本
  *
@@ -226,6 +228,12 @@ import { QUICK_TASK_IPC_CHANNELS, TRAY_IPC_CHANNELS, VOICE_DICTATION_IPC_CHANNEL
  * 暴露给渲染进程的 API 接口定义
  */
 export interface ElectronAPI {
+  onArchivePolicyChanged: (callback: () => void) => () => void
+  confirmManualArchive: (kind: 'agent' | 'chat', id: string) => Promise<boolean>
+  getArchivePolicy: () => Promise<ArchivePolicy>
+  setArchivePolicy: (change: ArchivePolicyChange) => Promise<ArchivePolicy>
+  undoAutoArchive: (batchId: string) => Promise<{ policy: ArchivePolicy; restored: number }>
+
   // ===== 运行时相关 =====
 
   /**
@@ -1434,6 +1442,16 @@ export interface ElectronAPI {
  * 实现 ElectronAPI 接口
  */
 const electronAPI: ElectronAPI = {
+  onArchivePolicyChanged: (callback) => {
+    const handler = (): void => callback()
+    ipcRenderer.on(ARCHIVE_POLICY_CHANNELS.CHANGED, handler)
+    return () => ipcRenderer.removeListener(ARCHIVE_POLICY_CHANNELS.CHANGED, handler)
+  },
+  confirmManualArchive: (kind, id) => ipcRenderer.invoke(ARCHIVE_POLICY_CHANNELS.CONFIRM, kind, id),
+  getArchivePolicy: () => ipcRenderer.invoke(ARCHIVE_POLICY_CHANNELS.GET),
+  setArchivePolicy: (change) => ipcRenderer.invoke(ARCHIVE_POLICY_CHANNELS.SET, change),
+  undoAutoArchive: (batchId) => ipcRenderer.invoke(ARCHIVE_POLICY_CHANNELS.UNDO, batchId),
+
   // 运行时
   getRuntimeStatus: () => {
     return ipcRenderer.invoke(IPC_CHANNELS.GET_RUNTIME_STATUS)

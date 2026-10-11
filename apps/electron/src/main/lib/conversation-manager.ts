@@ -1,3 +1,4 @@
+import { readArchivePolicy, shouldAutoArchive, recordAutoArchive } from './archive-policy'
 /**
  * 对话管理器
  *
@@ -464,17 +465,20 @@ export function updateContextDividers(conversationId: string, dividers: string[]
  */
 export function autoArchiveConversations(daysThreshold: number): number {
   const index = readIndex()
-  const threshold = Date.now() - daysThreshold * 86_400_000
+  const policy = readArchivePolicy()
+  const entries: import('@proma/shared').ArchiveLogEntry[] = []
   let count = 0
 
   for (const conv of index.conversations) {
-    if (!conv.pinned && !conv.archived && conv.updatedAt < threshold) {
+    if (shouldAutoArchive(policy, 'chat', conv, daysThreshold)) {
+      entries.push({ kind: 'chat', id: conv.id, title: conv.title, updatedAt: conv.updatedAt })
       conv.archived = true
       count++
     }
   }
 
   if (count > 0) {
+    recordAutoArchive(entries)
     writeIndex(index)
     console.log(`[对话管理] 自动归档 ${count} 个对话（阈值: ${daysThreshold} 天）`)
   }

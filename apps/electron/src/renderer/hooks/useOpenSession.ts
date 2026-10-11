@@ -33,6 +33,8 @@ import {
 } from '@/atoms/settings-tab'
 
 interface OpenSessionOptions {
+  /** 搜索或归档入口按需传入元数据，确保所属项目与会话内容同步。 */
+  sessionMeta?: import('@proma/shared').AgentSessionMeta
   bypassSettingsGuard?: boolean
   /** 仅在导航实际执行后调用；设置 Guard 取消时不会调用。 */
   onOpened?: () => void
@@ -65,6 +67,10 @@ export function useOpenSession(): OpenSessionFn {
         return
       }
       setSettingsOpen(false)
+      if (options?.sessionMeta) {
+        const meta = options.sessionMeta
+        store.set(agentSessionsAtom, prev => [...prev.filter(s => s.id !== meta.id), meta])
+      }
 
       // 切回 agent 会话时，若该会话上次开着预览 Tab 则一并重建并回到上次视图
       const restore = type === 'agent'
@@ -96,7 +102,7 @@ export function useOpenSession(): OpenSessionFn {
         })
 
         // 同步 workspaceId，确保与 TabBar 切换行为一致
-        const session = agentSessions.find((s) => s.id === sessionId)
+        const session = options?.sessionMeta ?? agentSessions.find((s) => s.id === sessionId)
         if (session?.workspaceId) {
           setCurrentAgentWorkspaceId(session.workspaceId)
           window.electronAPI.updateSettings({

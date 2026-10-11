@@ -68,3 +68,5 @@ export * from './agent-island'
 
 // 用户授权的 Markdown Vault 相关类型
 export * from './vault'
+
+export * from './archive-policy'
