@@ -27,10 +27,10 @@ describe('multi-account migration safety', () => {
   })
   test('never silently switches to a different identity', () => {
     expect(() => resolveAccount([account], 'wechat-2')).toThrow()
-    expect(() => resolveAccount([{ ...account, status: 'login-required' }], 'wechat-1')).toThrow()
+    expect(() => resolveAccount([{ ...account, status: 'disabled' }], 'wechat-1')).toThrow()
   })
   test('creates stable isolated partition identifiers', () => {
-    expect(partitionForNewProfile('wechat-1')).toBe('persist:proma-social-wechat-1')
+    expect(partitionForNewProfile('wechat-1')).toBe('social-account:wechat-1')
     expect(() => partitionForNewProfile('../outside')).toThrow()
   })
 })
