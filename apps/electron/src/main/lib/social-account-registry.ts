@@ -94,7 +94,7 @@ export function resolveAccount(accounts: readonly BrowserAccount[], accountId: s
   assertUniqueProfiles(accounts)
   const account = accounts.find((item) => item.id === accountId)
   if (!account) throw new Error('Browser account not found')
-  if (account.status !== 'active') throw new Error('Browser account is not verified and active')
+  if (account.status === 'disabled') throw new Error('Browser account is disabled')
   return account
 }
 
