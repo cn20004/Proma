@@ -15,6 +15,8 @@ export interface BrowserAccount {
   displayName: string
   /** Stable opaque identifier, never a path or session secret. */
   profileId: string
+  /** Reuse the existing workspace partition without copying login secrets. */
+  legacyProfileKey?: string
   status: AccountStatus
   /** Historical project IDs; informational, never delete old projects. */
   legacyProjectIds: string[]
@@ -62,6 +64,7 @@ function validateId(id: string): void {
 export function validateAccount(account: BrowserAccount): BrowserAccount {
   validateId(account.id)
   validateId(account.profileId)
+  if (account.legacyProfileKey !== undefined && !/^workspace:[^\u0000-\u001f]+$/.test(account.legacyProfileKey)) throw new Error('Invalid legacy workspace profile key')
   if (!account.displayName.trim()) throw new Error('Account name is required')
   if (new Set(account.legacyProjectIds).size !== account.legacyProjectIds.length) {
     throw new Error('Duplicate historical project ID')
@@ -96,7 +99,12 @@ export function resolveAccount(accounts: readonly BrowserAccount[], accountId: s
 }
 
 /** App's future browser adapter must supply this immutable partition. */
+export function profileKeyForAccount(account: BrowserAccount): string {
+  validateAccount(account)
+  return account.legacyProfileKey ?? `social-account:${account.profileId}`
+}
+
 export function partitionForNewProfile(profileId: string): string {
   validateId(profileId)
-  return `persist:proma-social-${profileId}`
+  return `social-account:${profileId}`
 }
