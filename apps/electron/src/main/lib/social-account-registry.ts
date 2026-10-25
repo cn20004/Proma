@@ -62,8 +62,13 @@ function validateId(id: string): void {
 }
 
 export function validateAccount(account: BrowserAccount): BrowserAccount {
+  if (!account || typeof account !== 'object') throw new Error('Invalid account record')
   validateId(account.id)
   validateId(account.profileId)
+  if (!['wechat-channels', 'zhihu', 'xiaohongshu', 'bilibili', 'other'].includes(account.platform)) throw new Error('Invalid platform')
+  if (!['unverified', 'active', 'login-required', 'disabled'].includes(account.status)) throw new Error('Invalid account status')
+  if (typeof account.displayName !== 'string') throw new Error('Invalid display name')
+  if (!Array.isArray(account.legacyProjectIds) || !account.legacyProjectIds.every((id) => typeof id === 'string')) throw new Error('Invalid historical projects')
   if (account.legacyProfileKey !== undefined && !/^workspace:[^\u0000-\u001f]+$/.test(account.legacyProfileKey)) throw new Error('Invalid legacy workspace profile key')
   if (!account.displayName.trim()) throw new Error('Account name is required')
   if (new Set(account.legacyProjectIds).size !== account.legacyProjectIds.length) {
@@ -76,13 +81,16 @@ export function validateAccount(account: BrowserAccount): BrowserAccount {
 export function assertUniqueProfiles(accounts: readonly BrowserAccount[]): void {
   const accountIds = new Set<string>()
   const profileIds = new Set<string>()
+  const partitions = new Set<string>()
   for (const account of accounts) {
     validateAccount(account)
-    if (accountIds.has(account.id) || profileIds.has(account.profileId)) {
+    const identity = profileKeyForAccount(account)
+    if (accountIds.has(account.id) || profileIds.has(account.profileId) || partitions.has(identity)) {
       throw new Error('Duplicate account ID or browser profile ID')
     }
     accountIds.add(account.id)
     profileIds.add(account.profileId)
+    partitions.add(identity)
   }
 }
 
