@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   assertUniqueProfiles, partitionForNewProfile, profileKeyForAccount, resolveAccount, suggestLegacyAccounts,
   type BrowserAccount,
-} from './account-registry'
+} from './social-account-registry'
 
 const account: BrowserAccount = {
   id: 'wechat-1', platform: 'wechat-channels', displayName: '微信1',
