@@ -56,6 +56,41 @@ export function SocialAccountManager(): React.ReactElement {
     finally { setBusy(false) }
   }
 
+  async function importLegacyProjects(): Promise<void> {
+    const candidates = workspaces.filter((project) =>
+      /微信|视频号|知乎|小红书|哔哩|b站|bilibili/i.test(project.name) &&
+      !accounts.some((account) => account.legacyProjectIds.includes(project.id))
+    )
+    if (candidates.length === 0) { setMessage('没有发现尚未登记的相关旧项目'); return }
+    setBusy(true)
+    setMessage('')
+    try {
+      let next = accounts
+      for (const project of candidates) {
+        const nameLower = project.name.toLowerCase()
+        const detected: SocialPlatform = /微信|视频号/.test(project.name)
+          ? 'wechat-channels'
+          : /知乎/.test(project.name)
+            ? 'zhihu'
+            : /小红书/.test(project.name)
+              ? 'xiaohongshu'
+              : /哔哩|b站|bilibili/.test(nameLower) ? 'bilibili' : 'other'
+        const id = crypto.randomUUID()
+        const now = new Date().toISOString()
+        next = await window.electronAPI.saveSocialBrowserAccount({
+          id, profileId: id, displayName: project.name, platform: detected,
+          legacyProfileKey: `workspace:${project.id}`,
+          legacyProjectIds: [project.id], status: 'unverified', createdAt: now, updatedAt: now,
+        })
+      }
+      setAccounts(next)
+      setMessage(`已建立${candidates.length}个旧项目账号映射。登录状态没有被移动；请逐个核对对应的实际平台账号。`)
+    } catch (error) {
+      setMessage(`部分账号可能已登记，请刷新并检查：${String(error)}`)
+      await refresh()
+    } finally { setBusy(false) }
+  }
+
   async function bindAccount(accountId: string): Promise<void> {
     if (!sessionId) { setMessage('请先选择一个 Agent 对话'); return }
     setBusy(true)
@@ -103,6 +138,10 @@ export function SocialAccountManager(): React.ReactElement {
             <p className="my-2 text-xs text-muted-foreground">迁移旧账号时选择原项目；新账号保持“新身份”。不要将同一个旧项目分配给多个不同账号。</p>
             <button type="button" disabled={busy} onClick={() => void addAccount()}
               className="mb-4 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50">添加账号</button>
+            <button type="button" disabled={busy} onClick={() => void importLegacyProjects()}
+              className="mb-4 ml-2 rounded-lg border px-3 py-2 text-sm disabled:opacity-50">
+              识别并导入旧项目
+            </button>
             <div className="space-y-2">
               {accounts.map((account) => (
                 <div key={account.id} className="flex items-center justify-between gap-3 rounded-lg border p-3 text-sm">
