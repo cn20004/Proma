@@ -10,6 +10,7 @@ import { BrowserCdpTimeoutError, BrowserOperationAbortedError, BROWSER_OBSERVE_T
 import { parseBrowserPressAction } from './browser-key-policy'
 import { browserObservationNameLimit, prioritizeBrowserObservationCandidates, resolveBrowserObserveMaxElements } from './browser-observation-policy'
 import { buildPersistentBrowserPartition, resolveBrowserProfileKey } from './browser-profile-policy'
+import { SocialAccountStore, SessionAccountBindingStore } from './social-account-store'
 import { canBrowserSessionTakeForeground, isNewBrowserTabLayoutRevision } from './browser-presentation-policy'
 import { hasAcknowledgedBrowserRiskDisclaimer } from './browser-risk-disclaimer'
 import { buildPromaBrowserUserAgent } from './browser-identity'
@@ -235,8 +236,18 @@ export class BrowserController {
     const previous = this.configurations.get(sessionId)
     const allowedRoots = input.allowedRoots ?? previous?.allowedRoots ?? []
     const executionSource = input.executionSource ?? previous?.executionSource ?? 'user'
+    // A conversation binding overrides the legacy workspace default. The account
+    // record may alias the original workspace partition, preserving existing logins.
+    const boundAccountId = new SessionAccountBindingStore().get(sessionId)
+    const effectiveProfileKey = boundAccountId
+      ? new SocialAccountStore().profileKey(boundAccountId)
+      : input.profileKey
+    const live = this.sessions.get(sessionId)
+    if (live && live.partition !== buildPersistentBrowserPartition(effectiveProfileKey)) {
+      throw new Error('浏览器身份已变更；必须先关闭旧浏览器会话才能切换账号。')
+    }
     this.configurations.set(sessionId, {
-      profileKey: input.profileKey,
+      profileKey: effectiveProfileKey,
       allowedRoots: [...new Set(allowedRoots.filter(Boolean))],
       executionSource,
     })
