@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import {
-  assertUniqueProfiles, partitionForNewProfile, resolveAccount, suggestLegacyAccounts,
+  assertUniqueProfiles, partitionForNewProfile, profileKeyForAccount, resolveAccount, suggestLegacyAccounts,
   type BrowserAccount,
 } from './account-registry'
 
@@ -28,6 +28,24 @@ describe('multi-account migration safety', () => {
   test('never silently switches to a different identity', () => {
     expect(() => resolveAccount([account], 'wechat-2')).toThrow()
     expect(() => resolveAccount([{ ...account, status: 'disabled' }], 'wechat-1')).toThrow()
+  })
+  test('retains the original workspace partition for existing signed-in projects', () => {
+    expect(profileKeyForAccount({
+      ...account,
+      legacyProfileKey: 'workspace:old-project-1',
+    })).toBe('workspace:old-project-1')
+  })
+  test('rejects importing the same old workspace as two accounts', () => {
+    expect(() => assertUniqueProfiles([
+      { ...account, legacyProfileKey: 'workspace:old-project-1' },
+      {
+        ...account, id: 'wechat-2', profileId: 'wechat-2',
+        legacyProfileKey: 'workspace:old-project-1',
+      },
+    ])).toThrow()
+  })
+  test('permits initial authentication of a new profile without switching accounts', () => {
+    expect(resolveAccount([{ ...account, status: 'unverified' }], 'wechat-1').id).toBe('wechat-1')
   })
   test('creates stable isolated partition identifiers', () => {
     expect(partitionForNewProfile('wechat-1')).toBe('social-account:wechat-1')
