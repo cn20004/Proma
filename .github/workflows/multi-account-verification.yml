@@ -1,0 +1,21 @@
+name: Multi-account browser verification
+
+on:
+  push:
+    branches:
+      - feature/multi-account-browser-profiles
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install
+      - name: Test account migration and identity isolation
+        run: bun test apps/electron/src/main/lib/social-account-registry.test.ts
+      - name: Typecheck workspace
+        run: bun run typecheck
