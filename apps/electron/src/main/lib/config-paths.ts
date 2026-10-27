@@ -49,7 +49,10 @@ export function getConfigDirName(): string {
  * 如果目录不存在则自动创建。
  */
 export function getConfigDir(): string {
-  const configDir = join(homedir(), getConfigDirName())
+  // 20004 Edition: 优先使用启动时配置的数据根目录；未设置时完全兼容旧版。
+  // 位置配置由启动引导器负责读取（不放在迁移中的 settings.json）。
+  const overriddenRoot = process.env.PROMA_DATA_DIR?.trim()
+  const configDir = overriddenRoot ? join(overriddenRoot, getConfigDirName().slice(1)) : join(homedir(), getConfigDirName())
 
   if (!existsSync(configDir)) {
     mkdirSync(configDir, { recursive: true })
