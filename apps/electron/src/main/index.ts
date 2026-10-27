@@ -1,7 +1,32 @@
 import { app, BrowserWindow, dialog, Menu, nativeTheme, protocol, screen, shell } from 'electron'
 import { join } from 'path'
 import { pathToFileURL } from 'url'
-import { existsSync } from 'fs'
+import { existsSync, readFileSync } from 'fs'
+import { isAbsolute, resolve } from 'path'
+
+// 20004 Edition: Windows 数据目录引导配置必须在单实例锁和其他模块初始化前读取。
+// 配置本身是小型指针文件；真正的会话/配置和 Chromium userData 可以放到其他磁盘。
+if (process.platform === 'win32' && app.isPackaged) {
+  try {
+    const pointer = join(app.getPath('appData'), 'Proma-20004', 'data-location.json')
+    if (existsSync(pointer)) {
+      const parsed: unknown = JSON.parse(readFileSync(pointer, 'utf8'))
+      const root = typeof parsed === 'object' && parsed !== null && 'dataRoot' in parsed
+        ? (parsed as { dataRoot?: unknown }).dataRoot : undefined
+      if (typeof root === 'string' && isAbsolute(root) && existsSync(root)) {
+        const dataRoot = resolve(root)
+        process.env.PROMA_DATA_DIR = dataRoot
+        const electronDir = join(dataRoot, 'electron')
+        if (existsSync(electronDir)) app.setPath('userData', electronDir)
+        console.info('[storage] 使用外置数据目录:', dataRoot)
+      } else {
+        console.error('[storage] 配置的目标磁盘不可用，已继续使用默认目录；请勿在此状态下操作旧数据。')
+      }
+    }
+  } catch (error) {
+    console.error('[storage] 读取数据目录配置失败，保留默认路径:', error)
+  }
+}
 
 // Dev 与正式版使用独立的 userData 目录，避免共享 Chromium SingletonLock 导致 dev 启动被静默退出
 // 必须在任何会读取 userData 路径的模块加载之前执行
