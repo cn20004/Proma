@@ -10,7 +10,7 @@ if (process.platform === 'win32' && app.isPackaged) {
   try {
     const pointer = join(app.getPath('appData'), 'Proma-20004', 'data-location.json')
     if (existsSync(pointer)) {
-      const parsed: unknown = JSON.parse(readFileSync(pointer, 'utf8').replace(/^\\uFEFF/, ''))
+      const parsed: unknown = JSON.parse(readFileSync(pointer, 'utf8').replace(/^\uFEFF/, ''))
       const root = typeof parsed === 'object' && parsed !== null && 'dataRoot' in parsed
         ? (parsed as { dataRoot?: unknown }).dataRoot : undefined
       if (typeof root === 'string' && isAbsolute(root) && existsSync(root)) {
