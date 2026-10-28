@@ -91,6 +91,32 @@ export function SocialAccountManager(): React.ReactElement {
     } finally { setBusy(false) }
   }
 
+  async function renameAccount(account: BrowserAccount): Promise<void> {
+    const nextName = window.prompt('修改账号名称', account.displayName)
+    if (nextName === null) return
+    if (!nextName.trim()) { setMessage('账号名称不能为空'); return }
+    setBusy(true)
+    setMessage('')
+    try {
+      setAccounts(await window.electronAPI.saveSocialBrowserAccount({
+        ...account, displayName: nextName.trim(), updatedAt: new Date().toISOString(),
+      }))
+      setMessage('账号名称已更新；浏览器登录身份没有变化。')
+    } catch (error) { setMessage(String(error)) }
+    finally { setBusy(false) }
+  }
+
+  async function deleteAccount(account: BrowserAccount): Promise<void> {
+    if (!window.confirm(`确定删除账号登记“${account.displayName}”？原项目和浏览器登录数据会保留；已绑定到会话的账号不可删除。`)) return
+    setBusy(true)
+    setMessage('')
+    try {
+      setAccounts(await window.electronAPI.deleteSocialBrowserAccount(account.id))
+      setMessage('已删除账号登记。原项目及浏览器登录数据仍然保留。')
+    } catch (error) { setMessage(String(error)) }
+    finally { setBusy(false) }
+  }
+
   async function bindAccount(accountId: string): Promise<void> {
     if (!sessionId) { setMessage('请先选择一个 Agent 对话'); return }
     setBusy(true)
@@ -152,11 +178,19 @@ export function SocialAccountManager(): React.ReactElement {
                       {account.legacyProjectIds.length > 0 ? ' · 继承旧项目登录' : ' · 独立新身份'}
                     </div>
                   </div>
-                  <button type="button" disabled={busy || !sessionId}
-                    onClick={() => void bindAccount(account.id)}
-                    className="shrink-0 rounded-lg border px-3 py-1 disabled:opacity-50">
-                    {selectedId === account.id ? '当前对话已选择' : '在当前对话使用'}
-                  </button>
+                  <div className="flex shrink-0 flex-wrap gap-1">
+                    <button type="button" disabled={busy || !sessionId}
+                      onClick={() => void bindAccount(account.id)}
+                      className="rounded-lg border px-3 py-1 disabled:opacity-50">
+                      {selectedId === account.id ? '当前对话已选择' : '在当前对话使用'}
+                    </button>
+                    <button type="button" disabled={busy} onClick={() => void renameAccount(account)}
+                      aria-label={`修改${account.displayName}名称`}
+                      className="rounded-lg border px-2 py-1 disabled:opacity-50">改名</button>
+                    <button type="button" disabled={busy} onClick={() => void deleteAccount(account)}
+                      aria-label={`删除${account.displayName}账号登记`}
+                      className="rounded-lg border px-2 py-1 text-destructive disabled:opacity-50">删除</button>
+                  </div>
                 </div>
               ))}
             </div>
