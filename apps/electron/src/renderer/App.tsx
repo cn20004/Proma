@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { useAtom, useStore } from 'jotai'
 import { AppShell } from './components/app-shell/AppShell'
+import { SocialAccountManager } from './components/social-accounts/SocialAccountManager'
 import { OnboardingView } from './components/onboarding/OnboardingView'
 import { EnvironmentCheckDialog } from './components/environment/EnvironmentCheckDialog'
 import { TooltipProvider } from './components/ui/tooltip'
@@ -93,6 +94,7 @@ export default function App(): React.ReactElement {
   return (
     <TooltipProvider delayDuration={200} disableHoverableContent>
       <AppShell />
+      <SocialAccountManager />
       <PlanningReminderRail />
       <ShortcutGuideDialog />
       <FaqDialog />

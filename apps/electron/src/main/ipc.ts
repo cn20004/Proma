@@ -163,6 +163,8 @@ import { browserController } from './lib/browser-controller'
 import { acknowledgeTerminalOutput, closeTerminalsForSession, createTerminal, getTerminalSnapshot, killTerminal, resizeTerminal, writeTerminal } from './lib/terminal-service'
 import { getMainWindow } from './lib/main-window-store'
 import { resolveBrowserProfileKey } from './lib/browser-profile-policy'
+import { SocialAccountStore, SessionAccountBindingStore } from './lib/social-account-store'
+import type { BrowserAccount } from './lib/social-account-registry'
 import { getUnstagedChanges, invalidateGitDiffCache, getFileDiff, getUntrackedContent, revertFile, getDiffContents, listWorktrees, getWorktreeChanges, getMainRepoRoot } from './lib/git-diff-service'
 import { registerPromaDirectoryPath, registerPromaFilePath } from './lib/local-file-protocol'
 import {
@@ -2640,6 +2642,40 @@ export function registerIpcHandlers(): void {
       executionSource: session.sourceDelegationId ? 'delegation' : session.sourceAutomationId ? 'automation' : 'user',
     })
   }
+
+  // ===== Multi-account browser identities (main window only) =====
+  // No IPC endpoint ever returns Chromium credentials or raw cookies.
+  ipcMain.handle('social-browser:list-accounts', async (event): Promise<BrowserAccount[]> => {
+    await assertMainRenderer(event.sender.id)
+    return new SocialAccountStore().list()
+  })
+  ipcMain.handle('social-browser:save-account', async (event, account: BrowserAccount): Promise<BrowserAccount[]> => {
+    await assertMainRenderer(event.sender.id)
+    return new SocialAccountStore().upsert(account)
+  })
+  ipcMain.handle('social-browser:delete-account', async (event, accountId: string): Promise<BrowserAccount[]> => {
+    await assertMainRenderer(event.sender.id)
+    if (typeof accountId !== 'string') throw new Error('Invalid account ID')
+    if (Object.values(new SessionAccountBindingStore().list()).includes(accountId)) {
+      throw new Error('账号仍被会话引用，请先解除会话绑定。')
+    }
+    return new SocialAccountStore().remove(accountId)
+  })
+  ipcMain.handle('social-browser:get-session-account', async (event, sessionId: string): Promise<string | null> => {
+    await assertBrowserSessionAccess(event.sender.id, sessionId)
+    return new SessionAccountBindingStore().get(sessionId)
+  })
+  ipcMain.handle('social-browser:bind-session-account', async (event, sessionId: string, accountId: string | null): Promise<void> => {
+    await assertBrowserSessionAccess(event.sender.id, sessionId)
+    if (browserController.getState(sessionId)) {
+      throw new Error('请先关闭此对话的浏览器，再切换账号，避免在旧页面操作新身份。')
+    }
+    if (accountId !== null) {
+      if (typeof accountId !== 'string') throw new Error('Invalid account ID')
+      new SocialAccountStore().profileKey(accountId)
+    }
+    new SessionAccountBindingStore().set(sessionId, accountId)
+  })
 
   ipcMain.handle(
     AGENT_IPC_CHANNELS.OPEN_BROWSER,

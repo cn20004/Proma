@@ -228,6 +228,12 @@ import { QUICK_TASK_IPC_CHANNELS, TRAY_IPC_CHANNELS, VOICE_DICTATION_IPC_CHANNEL
  * 暴露给渲染进程的 API 接口定义
  */
 export interface ElectronAPI {
+  listSocialBrowserAccounts: () => Promise<import('../main/lib/social-account-registry').BrowserAccount[]>
+  saveSocialBrowserAccount: (account: import('../main/lib/social-account-registry').BrowserAccount) => Promise<import('../main/lib/social-account-registry').BrowserAccount[]>
+  deleteSocialBrowserAccount: (accountId: string) => Promise<import('../main/lib/social-account-registry').BrowserAccount[]>
+  getSocialBrowserSessionAccount: (sessionId: string) => Promise<string | null>
+  bindSocialBrowserSessionAccount: (sessionId: string, accountId: string | null) => Promise<void>
+
   onArchivePolicyChanged: (callback: () => void) => () => void
   confirmManualArchive: (kind: 'agent' | 'chat', id: string) => Promise<boolean>
   getArchivePolicy: () => Promise<ArchivePolicy>
@@ -1442,6 +1448,12 @@ export interface ElectronAPI {
  * 实现 ElectronAPI 接口
  */
 const electronAPI: ElectronAPI = {
+  listSocialBrowserAccounts: () => ipcRenderer.invoke('social-browser:list-accounts'),
+  saveSocialBrowserAccount: (account) => ipcRenderer.invoke('social-browser:save-account', account),
+  deleteSocialBrowserAccount: (accountId) => ipcRenderer.invoke('social-browser:delete-account', accountId),
+  getSocialBrowserSessionAccount: (sessionId) => ipcRenderer.invoke('social-browser:get-session-account', sessionId),
+  bindSocialBrowserSessionAccount: (sessionId, accountId) => ipcRenderer.invoke('social-browser:bind-session-account', sessionId, accountId),
+
   onArchivePolicyChanged: (callback) => {
     const handler = (): void => callback()
     ipcRenderer.on(ARCHIVE_POLICY_CHANNELS.CHANGED, handler)
