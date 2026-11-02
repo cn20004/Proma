@@ -299,7 +299,7 @@ export function WorkspaceSelector(): React.ReactElement {
           className="overflow-y-auto scrollbar-thin flex flex-col p-1"
           style={{ maxHeight: listHeight }}
         >
-          {workspaces.map((ws) => (
+          {workspaces.filter((ws) => ws.name.trim() !== '杭州项目').map((ws) => (
             <div key={ws.id} className="relative">
               {/* 上方插入指示线 */}
               {dropIndicator?.id === ws.id && dropIndicator.position === 'before' && (
