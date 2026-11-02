@@ -54,6 +54,11 @@ export function useProjectActions(): UseProjectActionsResult {
     async (name: string, options?: Pick<CreateAgentWorkspaceInput, 'projectRootPath'>): Promise<AgentWorkspace | null> => {
       const trimmed = name.trim()
       if (!trimmed) return null
+      // 旧版定制项目已停用，不允许重新创建该专属入口。
+      if (trimmed === '杭州项目') {
+        toast.error('“杭州项目”已停用，请使用其他项目名称')
+        return null
+      }
       if (createInFlightRef.current) return null
       createInFlightRef.current = true
 
