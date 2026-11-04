@@ -77,6 +77,8 @@ function registerProtocolsAndHandlers(): void {
 
 
 import { getSettings, updateSettings } from './lib/settings-service'
+import { RemoteAccessService } from './remote-access/server'
+import { parseRemoteAccessSettings } from './remote-access/settings'
 import { handlePromaFileRequest } from './lib/local-file-protocol'
 
 // 处理 EPIPE 错误：当 stdout/stderr 管道被关闭时（如 electronmon 重启），忽略写入错误
@@ -735,6 +737,8 @@ function sendToMainWindow(channel: string, data?: unknown): void {
   }
 }
 
+const remoteAccessService = new RemoteAccessService()
+
 app.whenReady().then(bootstrap).catch(handleBootstrapFailure)
 
 /**
@@ -768,6 +772,22 @@ async function bootstrap(): Promise<void> {
 
   // Register IPC handlers
   registerIpcHandlers()
+
+  // Remote service is opt-in and always bound to loopback.
+  // Keep its bearer credential in a user-only local file; never print it to logs.
+  await safeAwait('startRemoteAccess', async () => {
+    const { readFileSync, writeFileSync, mkdirSync } = await import('node:fs')
+    const { dirname } = await import('node:path')
+    const settingsPath = join(app.getPath('userData'), 'remote-access.json')
+    if (!existsSync(settingsPath)) return
+    const settings = parseRemoteAccessSettings(JSON.parse(readFileSync(settingsPath, 'utf8')))
+    if (!settings.enabled || !settings.startWithApp) return
+    const { token } = await remoteAccessService.start(settings)
+    const tokenPath = join(app.getPath('userData'), 'remote-access-token.txt')
+    mkdirSync(dirname(tokenPath), { recursive: true })
+    writeFileSync(tokenPath, token, { mode: 0o600 })
+    console.info('[remote-access] 本地远程服务已启动（仅监听 127.0.0.1）')
+  })
 
   // 收敛上次退出时遗留的运行中委派子会话（内存态丢失，无法续跑）
   safeRun('markRunningDelegationsAsInterrupted', markRunningDelegationsAsInterrupted)
@@ -964,6 +984,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  void remoteAccessService.stop()
   // 标记正在退出，让 close 事件不再阻止关闭
   setQuitting()
 
