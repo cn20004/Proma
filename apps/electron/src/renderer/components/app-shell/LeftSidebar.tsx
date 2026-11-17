@@ -634,6 +634,27 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
   const [expandedExtraCountMap, setExpandedExtraCountMap] = React.useState<Map<string, number>>(new Map())
   /** 记录被用户手动折叠的工作区 ID（点击当前工作区标题时折叠/展开）。刻意不持久化：折叠被视为临时查看行为，刷新/重启后恢复默认展开 */
   const [collapsedWorkspaceIds, setCollapsedWorkspaceIds] = React.useState<Set<string>>(new Set())
+  const [projectSearch, setProjectSearch] = React.useState('')
+  const [favoriteProjectIds, setFavoriteProjectIds] = React.useState<string[]>(() => {
+    try {
+      const parsed: unknown = JSON.parse(window.localStorage.getItem('proma:favorite-projects') ?? '[]')
+      return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string') : []
+    } catch { return [] }
+  })
+  const [projectCategories, setProjectCategories] = React.useState<Record<string, string>>(() => {
+    try {
+      const parsed: unknown = JSON.parse(window.localStorage.getItem('proma:project-categories') ?? '{}')
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? Object.fromEntries(Object.entries(parsed).filter(([, v]) => ['工作','技术','个人'].includes(String(v))))
+        : {}
+    } catch { return {} }
+  })
+  React.useEffect(() => {
+    try { window.localStorage.setItem('proma:favorite-projects', JSON.stringify(favoriteProjectIds)) } catch { /* optional */ }
+  }, [favoriteProjectIds])
+  React.useEffect(() => {
+    try { window.localStorage.setItem('proma:project-categories', JSON.stringify(projectCategories)) } catch { /* optional */ }
+  }, [projectCategories])
   /** 工具入口可以整体折叠，为真实项目列表腾出垂直空间；偏好在重启后保留。 */
   const [toolsSectionExpanded, setToolsSectionExpanded] = React.useState<boolean>(() => {
     try {
@@ -2263,16 +2284,19 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
    * 项目组的最终显示顺序：把合成「自动任务」组按持久化的索引插入真实项目组中
    * （默认索引 0 = 最靠前）。合成组与真实项目一起参与拖拽排序。
    */
-  const displayProjectGroups = React.useMemo<AgentProjectGroup[]>(
-    () => {
-      if (!automationGroup) return agentProjectGroups
-      const idx = Math.min(Math.max(automationGroupOrder, 0), agentProjectGroups.length)
-      const combined = [...agentProjectGroups]
-      combined.splice(idx, 0, automationGroup)
-      return combined
-    },
-    [agentProjectGroups, automationGroup, automationGroupOrder],
-  )
+  const displayProjectGroups = React.useMemo<AgentProjectGroup[]>(() => {
+    const query = projectSearch.trim().toLocaleLowerCase()
+    const matching = agentProjectGroups.filter(({ workspace }) => !query || workspace.name.toLocaleLowerCase().includes(query))
+    const favorites = new Set(favoriteProjectIds)
+    const ordered = [
+      ...matching.filter(({ workspace }) => favorites.has(workspace.id)),
+      ...matching.filter(({ workspace }) => !favorites.has(workspace.id)),
+    ]
+    if (!automationGroup || query) return ordered
+    const position = Math.min(Math.max(automationGroupOrder, 0), ordered.length)
+    ordered.splice(position, 0, automationGroup)
+    return ordered
+  }, [agentProjectGroups, automationGroup, automationGroupOrder, projectSearch, favoriteProjectIds])
 
   /** Agent 归档会话按项目分组；归档列表仍只在进入该视图后按需加载。 */
   const archivedAgentSessionProjectGroups = React.useMemo(() => {
@@ -2965,6 +2989,20 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
       ),
     })
 
+    rows.push({
+      id: 'agent-project-filter', estimateSize: 42,
+      content: <div className="px-3 pb-1"><div className="flex items-center gap-2 rounded-md border border-foreground/10 px-2 py-1.5">
+        <Search size={14} className="text-foreground/40" />
+        <input type="search" aria-label="搜索项目名称" placeholder="搜索项目名称…" value={projectSearch}
+          onChange={(event) => setProjectSearch(event.target.value)}
+          className="w-full min-w-0 bg-transparent text-xs outline-none placeholder:text-foreground/35" />
+      </div></div>,
+    })
+    if (projectSearch && displayProjectGroups.length === 0) rows.push({
+      id: 'agent-project-no-results', estimateSize: 30,
+      content: <div className="px-4 py-2 text-xs text-muted-foreground">没有匹配的项目</div>,
+    })
+
     if (creatingProject) {
       rows.push({
         id: 'agent-project-create',
@@ -3009,6 +3047,15 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
           <div className="pl-2">
             <AgentProjectGroupItem
               group={group}
+              isFavorite={favoriteProjectIds.includes(group.workspace.id)}
+              category={projectCategories[group.workspace.id]}
+              onToggleFavorite={(id) => setFavoriteProjectIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])}
+              onSetCategory={(id, category) => setProjectCategories((prev) => {
+                const next = { ...prev }
+                if (category) next[id] = category
+                else delete next[id]
+                return next
+              })}
               isAutomationGroup={isAuto}
               workspaceNameMap={isAuto ? workspaceNameMap : undefined}
               currentWorkspaceId={currentWorkspaceId}
@@ -3115,6 +3162,9 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     creatingProject,
     createAgentSessionInWorkspace,
     displayProjectGroups,
+    projectSearch,
+    favoriteProjectIds,
+    projectCategories,
     dragProjectId,
     expandedDelegationParentIds,
     expandedExtraCountMap,
@@ -4696,6 +4746,10 @@ function getVisibleAgentProjectSessions({
 
 /** 项目分组历史 */
 interface AgentProjectGroupItemProps {
+  isFavorite?: boolean
+  category?: string
+  onToggleFavorite?: (id: string) => void
+  onSetCategory?: (id: string, category: string | null) => void
   group: AgentProjectGroup
   currentWorkspaceId: string | null
   /** 合成「自动任务」只读组：隐藏拖拽 / 新建会话 / 项目菜单等 workspace 专属操作，会话显示来源工作区角标 */
@@ -4744,6 +4798,10 @@ interface AgentProjectGroupItemProps {
 const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
   group,
   currentWorkspaceId,
+  isFavorite = false,
+  category,
+  onToggleFavorite,
+  onSetCategory,
   isAutomationGroup = false,
   workspaceNameMap,
   expanded,
@@ -4894,6 +4952,8 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
               <span className="min-w-0 truncate text-[13px] font-medium leading-[18px]">
                 {group.workspace.name}
               </span>
+              {isFavorite && <Star size={12} className="shrink-0 fill-amber-400 text-amber-500" />}
+              {category && <span className="shrink-0 rounded bg-foreground/[0.06] px-1 text-[10px] text-foreground/50">{category}</span>}
               <LocalProjectBadge
                 projectRootPath={group.workspace.projectRootPath}
                 projectRootStatus={group.workspace.projectRootStatus}
@@ -4959,6 +5019,14 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
               <FolderOpen size={14} />
               设为当前项目
             </DropdownMenuItem>
+            <DropdownMenuItem className="text-xs py-1" onSelect={() => onToggleFavorite?.(group.workspace.id)}>
+              <Star size={14} />{isFavorite ? '取消收藏' : '收藏项目'}
+            </DropdownMenuItem>
+            {(['工作', '技术', '个人'] as const).map((choice) => (
+              <DropdownMenuItem key={choice} className="text-xs py-1" onSelect={() => onSetCategory?.(group.workspace.id, category === choice ? null : choice)}>
+                <FolderOpen size={14} />{category === choice ? '✓ ' : ''}归类：{choice}
+              </DropdownMenuItem>
+            ))}
             <DropdownMenuItem
               className="text-xs py-1 [&>svg]:size-3.5"
               onSelect={handleStartWorkspaceRename}
