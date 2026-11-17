@@ -1675,7 +1675,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     let cursor = 0
     // Keep hidden legacy workspace IDs in place; never delete or migrate data.
     const newWorkspaceIds = baseIds.map((id) =>
-      visibleIds.has(id) ? visibleWorkspaceIds[cursor++] : id
+      visibleIds.has(id) ? (visibleWorkspaceIds[cursor++] ?? id) : id
     )
 
     if (oldAutoIndex >= 0 && newAutoIndex !== oldAutoIndex) {
@@ -2332,7 +2332,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
       sessions: agentSessions,
       workspaces,
       excludedSessionIds: draftSessionIds,
-    }).filter((group) => group.workspace.name.trim() !== '杭州项目').map((group) => ({
+    }).filter((group) => group.workspace?.name.trim() !== '杭州项目').map((group) => ({
       ...group,
       trees: buildAgentSessionTrees(group.sessions),
     }))
