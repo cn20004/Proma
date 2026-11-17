@@ -634,6 +634,21 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
   const [expandedExtraCountMap, setExpandedExtraCountMap] = React.useState<Map<string, number>>(new Map())
   /** 记录被用户手动折叠的工作区 ID（点击当前工作区标题时折叠/展开）。刻意不持久化：折叠被视为临时查看行为，刷新/重启后恢复默认展开 */
   const [collapsedWorkspaceIds, setCollapsedWorkspaceIds] = React.useState<Set<string>>(new Set())
+  /** 工具入口可以整体折叠，为真实项目列表腾出垂直空间；偏好在重启后保留。 */
+  const [toolsSectionExpanded, setToolsSectionExpanded] = React.useState<boolean>(() => {
+    try {
+      return window.localStorage.getItem('proma:sidebar-tools-expanded') === 'true'
+    } catch {
+      return false
+    }
+  })
+  React.useEffect(() => {
+    try {
+      window.localStorage.setItem('proma:sidebar-tools-expanded', String(toolsSectionExpanded))
+    } catch {
+      // 隐私模式或存储不可用时仍允许临时折叠。
+    }
+  }, [toolsSectionExpanded])
   /** 归档项目默认折叠；只记录用户主动展开的项目，避免影响活跃视图的临时状态。 */
   const [expandedArchivedProjectIds, setExpandedArchivedProjectIds] = React.useState<Set<string>>(new Set())
   /** 记录已展开的委派母会话；默认收起，避免批量派遣后撑满侧栏 */
@@ -2266,7 +2281,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
       sessions: agentSessions,
       workspaces,
       excludedSessionIds: draftSessionIds,
-    }).map((group) => ({
+    }).filter((group) => group.workspace.name.trim() !== '杭州项目').map((group) => ({
       ...group,
       trees: buildAgentSessionTrees(group.sessions),
     }))
@@ -3522,8 +3537,23 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
         </Tooltip>
       </div>
 
-      {/* 项目级组件：每一行直接打开对应的右侧工作区 Tab。 */}
-      <div className="space-y-0.5 px-3 pb-0.5 pt-2">
+      {/* 20004 工具分区：整体折叠时释放项目列表的空间。 */}
+      <div className="px-3 pt-2 pb-0.5">
+        <button
+          type="button"
+          aria-expanded={toolsSectionExpanded}
+          aria-controls="proma-sidebar-tool-entries"
+          aria-label={toolsSectionExpanded ? '收起工具面板' : '展开工具面板'}
+          onClick={() => setToolsSectionExpanded((previous) => !previous)}
+          className="flex w-full items-center justify-between rounded-md px-3 py-1.5 text-xs font-medium text-[hsl(var(--sidebar-primary-foreground))] transition-colors titlebar-no-drag hover:bg-accent-foreground/[0.08]"
+        >
+          <span>工具面板</span>
+          {toolsSectionExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+        </button>
+      </div>
+      <div id="proma-sidebar-tool-entries" hidden={!toolsSectionExpanded}>
+
+      <div className="space-y-0.5 px-3 pb-0.5">
         {productivityTools.todosEnabled && (
           <WorkspaceComponentSidebarEntry
             label="Todo"
@@ -3584,6 +3614,8 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
             badge={(capabilities?.skills.filter((skill) => skill.hasUpdate).length ?? 0) > 0 ? <span className="size-2.5 rounded-full bg-blue-500" /> : undefined}
           />
         )}
+      </div>
+
       </div>
 
       {/* 原生与虚拟列表共享顶部反馈，切换视图时不沿用上一列表的滚动状态。 */}
