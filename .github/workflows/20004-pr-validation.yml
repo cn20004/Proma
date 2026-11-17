@@ -25,7 +25,7 @@ jobs:
       - name: Electron typecheck
         run: bun run --filter='@proma/electron' typecheck
       - name: Existing sidebar and project tests
-        run: bun test apps/electron/src/renderer/components/ui apps/electron/src/renderer/lib/agent-session-list.test.ts
+        run: bun test apps/electron/src/renderer/lib/collapsed-agent-rail.test.ts apps/electron/src/renderer/lib/agent-message-queue.test.ts
 
   windows-package-smoke:
     runs-on: windows-latest
