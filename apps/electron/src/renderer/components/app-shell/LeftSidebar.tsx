@@ -1627,7 +1627,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     }
     const baseIds = workspaces.map((workspace) => workspace.id)
     // Use visual order, not base order: favorites are rendered before normal projects.
-    const visibleWorkspaces = workspaces.filter((workspace) => workspace.name.trim() !== '杭州项目')
+    const visibleWorkspaces = workspaces
     const pinned = new Set(favoriteProjectIds)
     const displayIds = [
       ...visibleWorkspaces.filter((workspace) => pinned.has(workspace.id)).map((workspace) => workspace.id),
@@ -2299,7 +2299,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
         sessionsByWorkspaceId.get(targetId)!.push(session)
       }
 
-      return workspaces.filter((workspace) => workspace.name.trim() !== '杭州项目').map((workspace) => ({
+      return workspaces.map((workspace) => ({
         workspace,
         sessions: sessionsByWorkspaceId.get(workspace.id) ?? [],
       }))
@@ -2332,7 +2332,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
       sessions: agentSessions,
       workspaces,
       excludedSessionIds: draftSessionIds,
-    }).filter((group) => group.workspace?.name.trim() !== '杭州项目').map((group) => ({
+    }).map((group) => ({
       ...group,
       trees: buildAgentSessionTrees(group.sessions),
     }))
