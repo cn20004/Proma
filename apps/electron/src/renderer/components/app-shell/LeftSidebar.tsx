@@ -1627,7 +1627,15 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     }
     const baseIds = workspaces.map((workspace) => workspace.id)
     // Use visual order, not base order: favorites are rendered before normal projects.
-    const displayIds = displayProjectGroups.map(({ workspace }) => workspace.id)
+    const visibleWorkspaces = workspaces.filter((workspace) => workspace.name.trim() !== '杭州项目')
+    const pinned = new Set(favoriteProjectIds)
+    const displayIds = [
+      ...visibleWorkspaces.filter((workspace) => pinned.has(workspace.id)).map((workspace) => workspace.id),
+      ...visibleWorkspaces.filter((workspace) => !pinned.has(workspace.id)).map((workspace) => workspace.id),
+    ]
+    if (automationGroup) displayIds.splice(
+      Math.min(Math.max(automationGroupOrder, 0), displayIds.length), 0, AUTOMATION_GROUP_ID
+    )
     const oldAutoIndex = displayIds.indexOf(AUTOMATION_GROUP_ID)
     const favorites = new Set(favoriteProjectIds)
     if (dragProjectId !== AUTOMATION_GROUP_ID && targetWorkspaceId !== AUTOMATION_GROUP_ID &&
@@ -1692,7 +1700,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
           toast.error('项目排序失败')
         })
     }
-  }, [dragProjectId, projectDropIndicator, automationGroupOrder, displayProjectGroups, favoriteProjectIds, projectSearch, setWorkspaces, workspaces, setAutomationGroupOrder])
+  }, [dragProjectId, projectDropIndicator, automationGroup, automationGroupOrder, favoriteProjectIds, projectSearch, setWorkspaces, workspaces, setAutomationGroupOrder])
 
   const handleProjectDragEnd = React.useCallback((): void => {
     setDragProjectId(null)
