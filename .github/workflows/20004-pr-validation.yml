@@ -22,6 +22,8 @@ jobs:
         with:
           node-version: 22
       - run: bun install --frozen-lockfile
+      - name: Block private project labels in public build
+        run: bun run apps/electron/scripts/check-20004-public-release.ts
       - name: Electron typecheck
         run: bun run --filter='@proma/electron' typecheck
       - name: Existing sidebar and project tests
@@ -38,6 +40,8 @@ jobs:
         with:
           node-version: 22
       - run: bun install --frozen-lockfile
+      - name: Block private project labels in Windows package
+        run: bun run apps/electron/scripts/check-20004-public-release.ts
       - name: Build Electron app
         run: bun run electron:build
       - name: Prepare runtime
