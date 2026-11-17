@@ -1555,10 +1555,11 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
 
   /** 开始拖拽项目排序 */
   const handleProjectDragStart = React.useCallback((e: React.DragEvent, workspaceId: string): void => {
+    if (projectSearch.trim()) { e.preventDefault(); return }
     setDragProjectId(workspaceId)
     e.dataTransfer.effectAllowed = 'move'
     e.dataTransfer.setData('text/plain', workspaceId)
-  }, [])
+  }, [projectSearch])
 
   /** 根据鼠标位置计算项目插入点 */
   const handleProjectDragOver = React.useCallback((e: React.DragEvent, workspaceId: string): void => {
@@ -1619,13 +1620,23 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
       return
     }
 
-    // 构造当前显示顺序的 id 列表（真实项目 + 按当前索引插入的合成组）
+    if (projectSearch.trim()) {
+      setDragProjectId(null)
+      setProjectDropIndicator(null)
+      return
+    }
     const baseIds = workspaces.map((workspace) => workspace.id)
-    const oldAutoIndex = automationGroup
-      ? Math.min(Math.max(automationGroupOrder, 0), baseIds.length)
-      : -1
-    const displayIds = [...baseIds]
-    if (oldAutoIndex >= 0) displayIds.splice(oldAutoIndex, 0, AUTOMATION_GROUP_ID)
+    // Use visual order, not base order: favorites are rendered before normal projects.
+    const displayIds = displayProjectGroups.map(({ workspace }) => workspace.id)
+    const oldAutoIndex = displayIds.indexOf(AUTOMATION_GROUP_ID)
+    const favorites = new Set(favoriteProjectIds)
+    if (dragProjectId !== AUTOMATION_GROUP_ID && targetWorkspaceId !== AUTOMATION_GROUP_ID &&
+        favorites.has(dragProjectId) !== favorites.has(targetWorkspaceId)) {
+      setDragProjectId(null)
+      setProjectDropIndicator(null)
+      toast.info('收藏项目和普通项目分区排序；请先修改收藏状态')
+      return
+    }
 
     const fromIndex = displayIds.indexOf(dragProjectId)
     const toIndex = displayIds.indexOf(targetWorkspaceId)
@@ -1651,11 +1662,19 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
 
     // 拆分：合成组的新索引 → settings；真实项目的新顺序 → 后端
     const newAutoIndex = reordered.indexOf(AUTOMATION_GROUP_ID)
-    const newWorkspaceIds = reordered.filter((id) => id !== AUTOMATION_GROUP_ID)
+    const visibleWorkspaceIds = reordered.filter((id) => id !== AUTOMATION_GROUP_ID)
+    const visibleIds = new Set(visibleWorkspaceIds)
+    let cursor = 0
+    // Keep hidden legacy workspace IDs in place; never delete or migrate data.
+    const newWorkspaceIds = baseIds.map((id) =>
+      visibleIds.has(id) ? visibleWorkspaceIds[cursor++] : id
+    )
 
     if (oldAutoIndex >= 0 && newAutoIndex !== oldAutoIndex) {
-      setAutomationGroupOrder(newAutoIndex)
-      window.electronAPI.updateSettings({ agentAutomationGroupOrder: newAutoIndex }).catch(console.error)
+      const preceding = new Set(reordered.slice(0, newAutoIndex))
+      const persistedAutoIndex = newWorkspaceIds.filter((id) => preceding.has(id)).length
+      setAutomationGroupOrder(persistedAutoIndex)
+      window.electronAPI.updateSettings({ agentAutomationGroupOrder: persistedAutoIndex }).catch(console.error)
     }
 
     const workspaceOrderChanged = newWorkspaceIds.some((id, i) => id !== baseIds[i])
@@ -1673,7 +1692,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
           toast.error('项目排序失败')
         })
     }
-  }, [dragProjectId, projectDropIndicator, automationGroup, automationGroupOrder, setWorkspaces, workspaces])
+  }, [dragProjectId, projectDropIndicator, automationGroupOrder, displayProjectGroups, favoriteProjectIds, projectSearch, setWorkspaces, workspaces, setAutomationGroupOrder])
 
   const handleProjectDragEnd = React.useCallback((): void => {
     setDragProjectId(null)
@@ -3075,6 +3094,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
               onSelectProject={isAuto ? handleToggleGroupCollapse : handleSelectProject}
               onNewSession={isAuto ? noopAsync : createAgentSessionInWorkspace}
               onDragStart={handleProjectDragStart}
+              canDrag={!projectSearch.trim()}
               onDragOver={handleProjectDragOver}
               onDragLeave={handleProjectDragLeave}
               onDrop={handleProjectDrop}
@@ -4747,6 +4767,7 @@ function getVisibleAgentProjectSessions({
 /** 项目分组历史 */
 interface AgentProjectGroupItemProps {
   isFavorite?: boolean
+  canDrag?: boolean
   category?: string
   onToggleFavorite?: (id: string) => void
   onSetCategory?: (id: string, category: string | null) => void
@@ -4799,6 +4820,7 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
   group,
   currentWorkspaceId,
   isFavorite = false,
+  canDrag = true,
   category,
   onToggleFavorite,
   onSetCategory,
@@ -4931,7 +4953,7 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
             type="button"
             aria-expanded={!collapsed}
             aria-controls={hideSessions ? undefined : `project-sessions-${group.workspace.id}`}
-            draggable={!renamingWorkspace}
+            draggable={!renamingWorkspace && canDrag}
             onDragStart={(e) => onDragStart(e, group.workspace.id)}
             onClick={(e) => {
               e.stopPropagation()
