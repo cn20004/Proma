@@ -4,8 +4,8 @@
  * API keys or operating-system credentials. The UI must supply the allowlist.
  */
 import { createCipheriv, createDecipheriv, createHash, randomBytes, scryptSync } from 'node:crypto'
-import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
-import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { constants, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, isAbsolute, resolve, sep } from 'node:path'
 
 const MAX_FILE_BYTES = 2 * 1024 * 1024
 const MAX_TOTAL_BYTES = 16 * 1024 * 1024
@@ -120,11 +120,13 @@ export function createEncryptedBackup(
   })
   const snapshot: PlainSnapshot = { version: VERSION, createdAt: new Date().toISOString(), files }
   const envelope = encrypt(snapshot, passphrase)
+  if (existsSync(backupFile)) throw new Error('Backup destination already exists')
   mkdirSync(dirname(backupFile), { recursive: true })
   const temporary = backupFile + '.' + randomBytes(6).toString('hex') + '.tmp'
   try {
     writeFileSync(temporary, JSON.stringify(envelope), { mode: 0o600, flag: 'wx' })
-    renameSync(temporary, backupFile)
+    // Exclusive copy prevents accidentally replacing a previously verified snapshot.
+    copyFileSync(temporary, backupFile, constants.COPYFILE_EXCL)
   } finally {
     if (existsSync(temporary)) rmSync(temporary)
   }
