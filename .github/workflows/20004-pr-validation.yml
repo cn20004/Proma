@@ -1,0 +1,60 @@
+name: Validate Proma 20004 feature changes
+
+on:
+  pull_request:
+    paths:
+      - 'apps/electron/**'
+      - '.github/workflows/20004-pr-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  typecheck-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - name: Block private project labels in public build
+        run: bun run apps/electron/scripts/check-20004-public-release.ts
+      - name: Electron typecheck
+        run: bun run --filter='@proma/electron' typecheck
+      - name: Existing sidebar and project tests
+        run: bun test apps/electron/src/renderer/lib/collapsed-agent-rail.test.ts apps/electron/src/renderer/lib/agent-message-queue.test.ts
+
+  windows-package-smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bun install --frozen-lockfile
+      - name: Block private project labels in Windows package
+        run: bun run apps/electron/scripts/check-20004-public-release.ts
+      - name: Build Electron app
+        run: bun run electron:build
+      - name: Prepare runtime
+        shell: bash
+        run: |
+          bun run --filter='@proma/electron' sync:runtime-deps
+          bun run --filter='@proma/electron' rebuild:node-pty
+      - name: Package Windows installer without publishing
+        run: npx electron-builder --win --x64 --publish never
+        working-directory: apps/electron
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Proma-20004-PR-Windows-x64
+          path: apps/electron/out/*.exe
+          if-no-files-found: error
+          retention-days: 7

@@ -304,6 +304,13 @@ export function initAutoUpdater(mainWindow: BrowserWindow): void {
   })
 
   autoUpdater.on('update-available', (info) => {
+    // 即使错误的 Release 元数据声称可更新，也绝不下载旧版本或同版本。
+    if (!isNewerVersion(info.version, app.getVersion())) {
+      console.warn(`[更新] 拒绝非升级版本：运行 v${app.getVersion()}，候选 v${info.version}`)
+      downloadedStatusDuringCheck = null
+      setStatus({ status: 'not-available' })
+      return
+    }
     const downloadedStatus = downloadedStatusDuringCheck
       ?? (currentStatus.status === 'downloaded' ? currentStatus : null)
 
@@ -348,11 +355,10 @@ export function initAutoUpdater(mainWindow: BrowserWindow): void {
     setStatus({
       status: 'downloaded',
       version: info.version,
-      installScheduled: IS_20004_EDITION,
+      installScheduled: false,
     })
-    // 20004 一键全自动：下载结束后等待所有 Agent 空闲，随后自动安装并重启。
-    // 若用户取消，保留已下载文件供稍后手动安装。
-    if (IS_20004_EDITION) idleInstallScheduler.request()
+    // 安全保护：下载更新不能自动关闭正在使用的应用。
+    // 只有用户明确选择“空闲时安装”才允许安排退出与安装。
   })
 
   autoUpdater.on('update-not-available', () => {
@@ -383,17 +389,21 @@ export function initAutoUpdater(mainWindow: BrowserWindow): void {
     })
   })
 
-  // 启动后延迟 10 秒首次检查
-  setTimeout(() => {
-    console.log('[更新] 首次自动检查更新')
-    void checkForUpdates()
-  }, 10_000)
+  // 20004 功能分支安装包可能尚未正式发布，自动检查 Release 会把测试构建
+  // 替换成同版本号但功能更旧的发布包。仅保留用户手动检查和确认安装。
+  if (IS_20004_EDITION) {
+    console.log('[更新] 20004 Edition 已禁用启动检查、定时检查及静默安装；可手动检查更新')
+  } else {
+    setTimeout(() => {
+      console.log('[更新] 首次自动检查更新')
+      void checkForUpdates()
+    }, 10_000)
 
-  // 每 4 小时自动检查一次；已下载版本也会检查，发现更高版本即自动替换下载。
-  checkInterval = setInterval(() => {
-    console.log('[更新] 定时自动检查更新')
-    void checkForUpdates()
-  }, 4 * 60 * 60 * 1000)
+    checkInterval = setInterval(() => {
+      console.log('[更新] 定时自动检查更新')
+      void checkForUpdates()
+    }, 4 * 60 * 60 * 1000)
+  }
 
   // 窗口关闭时清理定时器
   mainWindow.on('closed', () => {
