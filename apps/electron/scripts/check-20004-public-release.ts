@@ -5,8 +5,9 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, extname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('../', import.meta.url).pathname
+const root = fileURLToPath(new URL('../', import.meta.url))
 const names = [0x676d, 0x5dde, 0x9879, 0x76ee].map((value) => String.fromCharCode(value)).join('')
 const scannedExt = new Set(['.ts', '.tsx', '.js', '.jsx', '.json', '.yaml', '.yml', '.md', '.html', '.css', '.svg', '.txt'])
 const entries: string[] = []
