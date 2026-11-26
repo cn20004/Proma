@@ -94,7 +94,7 @@ import {
   sessionViewStateMapAtom,
 } from '@/atoms/tab-atoms'
 import { userProfileAtom } from '@/atoms/user-profile'
-import { sidebarViewModeAtom } from '@/atoms/sidebar-atoms'
+import { sidebarViewModeAtom, hiddenSidebarProjectIdsAtom } from '@/atoms/sidebar-atoms'
 import { searchDialogOpenAtom } from '@/atoms/search-atoms'
 import { hasUpdateAtom, updateStatusAtom, type UpdateStatus } from '@/atoms/updater'
 import { draftSessionIdsAtom } from '@/atoms/draft-session-atoms'
@@ -635,6 +635,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
   /** 记录被用户手动折叠的工作区 ID（点击当前工作区标题时折叠/展开）。刻意不持久化：折叠被视为临时查看行为，刷新/重启后恢复默认展开 */
   const [collapsedWorkspaceIds, setCollapsedWorkspaceIds] = React.useState<Set<string>>(new Set())
   const [projectSearch, setProjectSearch] = React.useState('')
+  const [hiddenProjectIds, setHiddenProjectIds] = useAtom(hiddenSidebarProjectIdsAtom)
   const [favoriteProjectIds, setFavoriteProjectIds] = React.useState<string[]>(() => {
     try {
       const parsed: unknown = JSON.parse(window.localStorage.getItem('proma:favorite-projects') ?? '[]')
@@ -2313,7 +2314,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
    */
   const displayProjectGroups = React.useMemo<AgentProjectGroup[]>(() => {
     const query = projectSearch.trim().toLocaleLowerCase()
-    const matching = agentProjectGroups.filter(({ workspace }) => !query || workspace.name.toLocaleLowerCase().includes(query))
+    const matching = agentProjectGroups.filter(({ workspace }) => !hiddenProjectIds.includes(workspace.id) && (!query || workspace.name.toLocaleLowerCase().includes(query)))
     const favorites = new Set(favoriteProjectIds)
     const ordered = [
       ...matching.filter(({ workspace }) => favorites.has(workspace.id)),
@@ -2323,7 +2324,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     const position = Math.min(Math.max(automationGroupOrder, 0), ordered.length)
     ordered.splice(position, 0, automationGroup)
     return ordered
-  }, [agentProjectGroups, automationGroup, automationGroupOrder, projectSearch, favoriteProjectIds])
+  }, [agentProjectGroups, automationGroup, automationGroupOrder, projectSearch, favoriteProjectIds, hiddenProjectIds])
 
   /** Agent 归档会话按项目分组；归档列表仍只在进入该视图后按需加载。 */
   const archivedAgentSessionProjectGroups = React.useMemo(() => {
@@ -3025,6 +3026,10 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
           className="w-full min-w-0 bg-transparent text-xs outline-none placeholder:text-foreground/35" />
       </div></div>,
     })
+    if (hiddenProjectIds.length > 0) rows.push({
+      id: 'agent-project-restore-hidden', estimateSize: 30,
+      content: <button type="button" className="px-4 py-1 text-left text-xs text-muted-foreground hover:text-foreground" onClick={() => setHiddenProjectIds([])}>恢复隐藏项目（{hiddenProjectIds.length}）</button>,
+    })
     if (projectSearch && displayProjectGroups.length === 0) rows.push({
       id: 'agent-project-no-results', estimateSize: 30,
       content: <div className="px-4 py-2 text-xs text-muted-foreground">没有匹配的项目</div>,
@@ -3076,6 +3081,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
               group={group}
               isFavorite={favoriteProjectIds.includes(group.workspace.id)}
               category={projectCategories[group.workspace.id]}
+              onHideProject={(id) => setHiddenProjectIds((prev) => prev.includes(id) ? prev : [...prev, id])}
               onToggleFavorite={(id) => setFavoriteProjectIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])}
               onSetCategory={(id, category) => setProjectCategories((prev) => {
                 const next = { ...prev }
@@ -3102,7 +3108,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
               onSelectProject={isAuto ? handleToggleGroupCollapse : handleSelectProject}
               onNewSession={isAuto ? noopAsync : createAgentSessionInWorkspace}
               onDragStart={handleProjectDragStart}
-              canDrag={!projectSearch.trim()}
+              canDrag={!projectSearch.trim() && hiddenProjectIds.length === 0}
               onDragOver={handleProjectDragOver}
               onDragLeave={handleProjectDragLeave}
               onDrop={handleProjectDrop}
@@ -3191,6 +3197,8 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     createAgentSessionInWorkspace,
     displayProjectGroups,
     projectSearch,
+    hiddenProjectIds,
+    setHiddenProjectIds,
     favoriteProjectIds,
     projectCategories,
     dragProjectId,
@@ -4777,6 +4785,7 @@ interface AgentProjectGroupItemProps {
   isFavorite?: boolean
   canDrag?: boolean
   category?: string
+  onHideProject?: (id: string) => void
   onToggleFavorite?: (id: string) => void
   onSetCategory?: (id: string, category: string | null) => void
   group: AgentProjectGroup
@@ -4830,6 +4839,7 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
   isFavorite = false,
   canDrag = true,
   category,
+  onHideProject,
   onToggleFavorite,
   onSetCategory,
   isAutomationGroup = false,
@@ -5049,6 +5059,11 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
               <FolderOpen size={14} />
               设为当前项目
             </DropdownMenuItem>
+            {onHideProject && group.workspace.slug !== 'default' && (
+              <DropdownMenuItem className="text-xs py-1" onSelect={() => onHideProject(group.workspace.id)}>
+                隐藏项目（保留数据）
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem className="text-xs py-1" onSelect={() => onToggleFavorite?.(group.workspace.id)}>
               <Star size={14} />{isFavorite ? '取消收藏' : '收藏项目'}
             </DropdownMenuItem>
