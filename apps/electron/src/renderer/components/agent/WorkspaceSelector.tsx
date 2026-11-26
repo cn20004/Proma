@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { projectListHeightAtom } from '@/atoms/sidebar-atoms'
+import { projectListHeightAtom, hiddenSidebarProjectIdsAtom } from '@/atoms/sidebar-atoms'
 import { useProjectActions } from '@/hooks/useProjectActions'
 import { LocalProjectBadge } from './LocalProjectBadge'
 import { agentSessionsAtom, agentWorkspacesAtom } from '@/atoms/agent-atoms'
@@ -31,6 +31,7 @@ export function WorkspaceSelector(): React.ReactElement {
   const [, setWorkspaces] = useAtom(agentWorkspacesAtom)
   const [, setAgentSessions] = useAtom(agentSessionsAtom)
   const [listHeight, setListHeight] = useAtom(projectListHeightAtom)
+  const [hiddenProjectIds] = useAtom(hiddenSidebarProjectIdsAtom)
 
   // 高度拖拽调整
   const listRef = React.useRef<HTMLDivElement>(null)
@@ -299,7 +300,7 @@ export function WorkspaceSelector(): React.ReactElement {
           className="overflow-y-auto scrollbar-thin flex flex-col p-1"
           style={{ maxHeight: listHeight }}
         >
-          {workspaces.map((ws) => (
+          {workspaces.filter((ws) => !hiddenProjectIds.includes(ws.id)).map((ws) => (
             <div key={ws.id} className="relative">
               {/* 上方插入指示线 */}
               {dropIndicator?.id === ws.id && dropIndicator.position === 'before' && (
