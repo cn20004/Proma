@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { ModeSwitcher } from './ModeSwitcher'
 import { SearchDialog } from './SearchDialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { UserAvatar } from '@/components/chat/UserAvatar'
 import { activeViewAtom, agentSkillsTabAtom } from '@/atoms/active-view'
 import { automationFormAtom, automationsAtom } from '@/atoms/automation-atoms'
@@ -329,6 +330,8 @@ export interface LeftSidebarProps {
 /** 日期分组标签 */
 type DateGroup = '今天' | '昨天' | '更早'
 
+type ProjectAppearance = { color?: string; icon?: string; tags?: Record<string, string[]>; filter?: string }
+
 interface AgentProjectGroup {
   workspace: AgentWorkspace
   sessions: AgentSessionMeta[]
@@ -635,6 +638,19 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
   /** 记录被用户手动折叠的工作区 ID（点击当前工作区标题时折叠/展开）。刻意不持久化：折叠被视为临时查看行为，刷新/重启后恢复默认展开 */
   const [collapsedWorkspaceIds, setCollapsedWorkspaceIds] = React.useState<Set<string>>(new Set())
   const [projectSearch, setProjectSearch] = React.useState('')
+  const [projectAppearance, setProjectAppearance] = React.useState<Record<string, ProjectAppearance>>(() => {
+    try { return JSON.parse(window.localStorage.getItem('proma:project-appearance-v1') ?? '{}') || {} }
+    catch { return {} }
+  })
+  const [appearanceProjectId, setAppearanceProjectId] = React.useState<string | null>(null)
+  const [tagDrafts, setTagDrafts] = React.useState<Record<string, string>>({})
+  const updateAppearance = (id: string, patch: Partial<ProjectAppearance>) => {
+    setProjectAppearance(prev => {
+      const next = { ...prev, [id]: { ...prev[id], ...patch } }
+      try { window.localStorage.setItem('proma:project-appearance-v1', JSON.stringify(next)) } catch { toast.error('无法保存项目配置') }
+      return next
+    })
+  }
   const [hiddenProjectIds, setHiddenProjectIds] = useAtom(hiddenSidebarProjectIdsAtom)
   const [favoriteProjectIds, setFavoriteProjectIds] = React.useState<string[]>(() => {
     try {
@@ -2319,12 +2335,16 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     const ordered = [
       ...matching.filter(({ workspace }) => favorites.has(workspace.id)),
       ...matching.filter(({ workspace }) => !favorites.has(workspace.id)),
-    ]
+    ].map(group => {
+      const appearance = projectAppearance[group.workspace.id]
+      if (!appearance?.filter) return group
+      return { ...group, sessions: group.sessions.filter(session => appearance.tags?.[session.id]?.includes(appearance.filter!)) }
+    })
     if (!automationGroup || query) return ordered
     const position = Math.min(Math.max(automationGroupOrder, 0), ordered.length)
     ordered.splice(position, 0, automationGroup)
     return ordered
-  }, [agentProjectGroups, automationGroup, automationGroupOrder, projectSearch, favoriteProjectIds, hiddenProjectIds])
+  }, [agentProjectGroups, automationGroup, automationGroupOrder, projectSearch, favoriteProjectIds, hiddenProjectIds, projectAppearance])
 
   /** Agent 归档会话按项目分组；归档列表仍只在进入该视图后按需加载。 */
   const archivedAgentSessionProjectGroups = React.useMemo(() => {
@@ -3081,6 +3101,8 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
               group={group}
               isFavorite={favoriteProjectIds.includes(group.workspace.id)}
               category={projectCategories[group.workspace.id]}
+              appearance={projectAppearance[group.workspace.id]}
+              onEditAppearance={() => { setTagDrafts({}); setAppearanceProjectId(group.workspace.id) }}
               onHideProject={(id) => setHiddenProjectIds((prev) => prev.includes(id) ? prev : [...prev, id])}
               onToggleFavorite={(id) => setFavoriteProjectIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])}
               onSetCategory={(id, category) => setProjectCategories((prev) => {
@@ -3201,6 +3223,7 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
     setHiddenProjectIds,
     favoriteProjectIds,
     projectCategories,
+    projectAppearance,
     dragProjectId,
     expandedDelegationParentIds,
     expandedExtraCountMap,
@@ -3523,6 +3546,10 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
   }
 
   // ===== 展开状态：完整侧边栏 =====
+  const editingAppearance = appearanceProjectId ? projectAppearance[appearanceProjectId] ?? {} : {}
+  const editingTags = editingAppearance.tags ?? {}
+  const availableTags = [...new Set(Object.values(editingTags).flat())].sort()
+  const editingSessions = agentSessions.filter(session => session.workspaceId === appearanceProjectId && !session.isDraft && !draftSessionIds.has(session.id))
   return (
     <div
       ref={sidebarRootRef}
@@ -3534,6 +3561,33 @@ export function LeftSidebar({ width, noTransition }: LeftSidebarProps): React.Re
       )}
       style={{ width: width ?? 300, minWidth: 200, flexShrink: 0 }}
     >
+      <Dialog open={!!appearanceProjectId} onOpenChange={open => { if (!open) setAppearanceProjectId(null) }}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
+          <DialogTitle>{workspaces.find(w => w.id === appearanceProjectId)?.name} · 项目外观与标签</DialogTitle>
+          <DialogDescription>独立设置项目颜色、图标和会话标签。筛选仅影响当前项目的普通历史列表。</DialogDescription>
+          {appearanceProjectId && <>
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <label>颜色 <input aria-label="项目颜色" type="color" value={editingAppearance.color || '#3b82f6'} onChange={e => updateAppearance(appearanceProjectId, { color: e.target.value })} /></label>
+              <button className="border rounded px-2 py-1" onClick={() => updateAppearance(appearanceProjectId, { color: undefined, icon: undefined })}>恢复默认外观</button>
+              <label>图标 <select className="border rounded bg-background" value={editingAppearance.icon ?? ''} onChange={e => updateAppearance(appearanceProjectId, { icon: e.target.value || undefined })}>{['','📁','⭐','💼','🎓','🚀','💡','🛠️','🎬','📚','🌐'].map(icon => <option key={icon} value={icon}>{icon || '默认'}</option>)}</select></label>
+              <label>标签筛选 <select className="border rounded bg-background" value={editingAppearance.filter ?? ''} onChange={e => updateAppearance(appearanceProjectId, { filter: e.target.value || undefined })}><option value="">全部</option>{availableTags.map(tag => <option key={tag}>{tag}</option>)}</select></label>
+            </div>
+            <div className="space-y-2">
+              {editingSessions.map(session => <div className="flex items-center gap-2 border rounded p-2" key={session.id}>
+                <span className="flex-1 min-w-0 truncate text-sm" title={session.title}>{session.title}</span>
+                <input aria-label={`为 ${session.title} 设置标签`} className="min-w-0 w-40 border rounded bg-background px-2 py-1 text-xs" placeholder="标签，用逗号分隔" value={tagDrafts[session.id] ?? (editingTags[session.id] ?? []).join(', ')} onChange={e => setTagDrafts(prev => ({ ...prev, [session.id]: e.target.value }))} />
+                <button className="border rounded px-2 py-1 text-xs" onClick={() => {
+                  const tags = [...new Set((tagDrafts[session.id] ?? (editingTags[session.id] ?? []).join(',')).split(/[,，]/).map(tag => tag.trim()).filter(Boolean))]
+                  const nextTags = { ...editingTags, [session.id]: tags }
+                  const filter = Object.values(nextTags).flat().includes(editingAppearance.filter ?? '') ? editingAppearance.filter : undefined
+                  updateAppearance(appearanceProjectId, { tags: nextTags, filter })
+                }}>保存</button>
+              </div>)}
+              {!editingSessions.length && <p className="text-sm text-muted-foreground">暂无会话</p>}
+            </div>
+          </>}
+        </DialogContent>
+      </Dialog>
       <SidebarWindowDragStrip
         height={isMac ? SIDEBAR_DRAG_STRIP_HEIGHT.expandedMac : SIDEBAR_DRAG_STRIP_HEIGHT.expanded}
       />
@@ -4785,6 +4839,8 @@ interface AgentProjectGroupItemProps {
   isFavorite?: boolean
   canDrag?: boolean
   category?: string
+  appearance?: ProjectAppearance
+  onEditAppearance?: () => void
   onHideProject?: (id: string) => void
   onToggleFavorite?: (id: string) => void
   onSetCategory?: (id: string, category: string | null) => void
@@ -4839,6 +4895,8 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
   isFavorite = false,
   canDrag = true,
   category,
+  appearance,
+  onEditAppearance,
   onHideProject,
   onToggleFavorite,
   onSetCategory,
@@ -4990,8 +5048,9 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
             )}
             <span className="flex min-w-0 items-center gap-1.5">
               <span className="min-w-0 truncate text-[13px] font-medium leading-[18px]">
-                {group.workspace.name}
+                <span style={{ color: appearance?.color }}>{appearance?.icon ? `${appearance.icon} ` : ''}{group.workspace.name}</span>
               </span>
+              {appearance?.filter && <span className="max-w-16 truncate text-[10px] text-primary" title={appearance.filter}>{appearance.filter}</span>}
               {isFavorite && <Star size={12} className="shrink-0 fill-amber-400 text-amber-500" />}
               {category && <span className="shrink-0 rounded bg-foreground/[0.06] px-1 text-[10px] text-foreground/50">{category}</span>}
               <LocalProjectBadge
@@ -5046,7 +5105,7 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
             <button
               type="button"
               aria-label="项目菜单"
-              className="absolute right-5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-md text-foreground/30 opacity-0 transition-colors hover:bg-foreground/[0.055] hover:text-foreground/60 group-hover/project:opacity-100 data-[state=open]:opacity-100 titlebar-no-drag"
+              className="absolute right-5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-md text-foreground/60 transition-colors hover:bg-foreground/[0.055] hover:text-foreground/80 titlebar-no-drag"
             >
               <MoreHorizontal size={13} />
             </button>
@@ -5059,6 +5118,7 @@ const AgentProjectGroupItem = React.memo(function AgentProjectGroupItem({
               <FolderOpen size={14} />
               设为当前项目
             </DropdownMenuItem>
+            <DropdownMenuItem onSelect={onEditAppearance}>项目颜色 / 图标 / 标签筛选</DropdownMenuItem>
             {onHideProject && group.workspace.slug !== 'default' && (
               <DropdownMenuItem className="text-xs py-1" onSelect={() => onHideProject(group.workspace.id)}>
                 隐藏项目（保留数据）
