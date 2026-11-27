@@ -24,3 +24,8 @@ export const leftSidebarWidthAtom = atomWithStorage<number>(
   'proma-left-sidebar-width',
   240,
 )
+
+/** Locally hidden project IDs; hiding never deletes project or session data. */
+export const hiddenSidebarProjectIdsAtom = atomWithStorage<string[]>(
+  'proma-hidden-sidebar-project-ids', [], undefined, { getOnInit: true },
+)
